@@ -61,6 +61,12 @@ namespace forte::eclipse4diac::io::ethercat {
       var_BusAdapterOut("BusAdapterOut"_STRID, *this, 0) {
   };
 
+  FORTE_ECMaster::~FORTE_ECMaster() {
+    // var_STATUS is destroyed before ~IOConfigFBController runs. Shut down the bus here while
+    // STATUS()/getDO() are still valid; base destructor deInit() then finds mController == nullptr.
+    deInit(nullptr, true);
+  }
+
   void FORTE_ECMaster::setInitialValues() {
     var_QI = 0_BOOL;
     var_Enable = 0_BOOL;
@@ -160,6 +166,16 @@ namespace forte::eclipse4diac::io::ethercat {
   void FORTE_ECMaster::onStartup(CEventChainExecutionThread *const paECET) {
     var_BusAdapterOut->var_Index = 0_UINT;
     IOConfigFBMultiMaster::onStartup(paECET);
+  }
+
+  EMGMResponse FORTE_ECMaster::changeExecutionState(EMGMCommandType paCommand) {
+    if (paCommand == EMGMCommandType::Kill || paCommand == EMGMCommandType::Stop) {
+      if (auto *bus = static_cast<ECBusHandler *>(getDeviceController()); bus != nullptr) {
+        bus->enableECCycle(false);
+      }
+    }
+
+    return IOConfigFBMultiMaster::changeExecutionState(paCommand);
   }
 
   void FORTE_ECMaster::executeEvent(TEventID paEIID, CEventChainExecutionThread *const paECET) {

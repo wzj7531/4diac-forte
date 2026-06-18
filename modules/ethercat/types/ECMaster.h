@@ -48,6 +48,9 @@ namespace forte::eclipse4diac::io::ethercat {
 
     public:
       FORTE_ECMaster(forte::StringId paInstanceNameId, CFBContainer &paContainer);
+      ~FORTE_ECMaster() override;
+
+      EMGMResponse changeExecutionState(EMGMCommandType paCommand) override;
 
       CIEC_BOOL var_QI;
       CIEC_BOOL var_Enable;

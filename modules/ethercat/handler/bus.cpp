@@ -131,8 +131,11 @@ namespace forte::eclipse4diac::io::ethercat {
   }
 
   void ECBusHandler::deInit() {
-    DEVLOG_INFO("ECBusHandler deInit!\n");
+    if (mIsShuttingDown) {
+      return;
+    }
     mIsShuttingDown = true;
+    DEVLOG_INFO("ECBusHandler deInit!\n");
     if(mDevices.empty() && mECMaster == nullptr) {
       return;
     }
@@ -287,7 +290,7 @@ namespace forte::eclipse4diac::io::ethercat {
     while(isAlive()) {
       // Wait until MasterFB enabled.
       while(!mEnableFlag && isAlive()) {
-        sleepThread(1000);
+        sleepThread(10);
       }
 
       if(!mLoopPreparedFlag) {
@@ -363,4 +366,5 @@ namespace forte::eclipse4diac::io::ethercat {
       DEVLOG_INFO("[ECBusHandler]: EtherCAT cycle resumed.\n");
     }
   }
+
 }
