@@ -35,9 +35,9 @@ namespace forte::io {
                                   const TForteUInt8 *const paSlaveConfigurationIO,
                                   TForteUInt8 paSlaveConfigurationIONum,
                                   int paType);
-                                  
+
       ~IOConfigHandlerFBMultiSlave() override;
-    
+
     protected:
       CIEC_BOOL &QI() {
         return *static_cast<CIEC_BOOL *>(getDI(0));
@@ -106,6 +106,5 @@ namespace forte::io {
       static const CIEC_WSTRING scmStopped;
       static const char *const scmNotFound;
       static const char *const scmIncorrectType;
-
   };
-}
+} // namespace forte::io

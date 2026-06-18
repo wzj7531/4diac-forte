@@ -28,7 +28,7 @@ namespace forte::io {
                                                            CFBContainer &paContainer,
                                                            const SFBInterfaceSpec &paInterfaceSpec,
                                                            const StringId paInstanceNameId) :
-                                                           IOConfigFBBase(paContainer, paInterfaceSpec, paInstanceNameId),
+      IOConfigFBBase(paContainer, paInterfaceSpec, paInstanceNameId),
       mIndex(static_cast<size_t>(-1)),
       mSlaveConfigurationIO(paSlaveConfigurationIO),
       mMaster(nullptr),
@@ -46,13 +46,9 @@ namespace forte::io {
                                                            forte::StringId paInstanceNameId,
                                                            const TForteUInt8 *const paSlaveConfigurationIO,
                                                            TForteUInt8 paSlaveConfigurationIONum,
-                                                           int paType) : 
-                                IOConfigHandlerFBMultiSlave(paSlaveConfigurationIO,
-                                                            paSlaveConfigurationIONum,
-                                                            paType,
-                                                            paContainer,
-                                                            paInterfaceSpec,
-                                                            paInstanceNameId) {
+                                                           int paType) :
+      IOConfigHandlerFBMultiSlave(
+          paSlaveConfigurationIO, paSlaveConfigurationIONum, paType, paContainer, paInterfaceSpec, paInstanceNameId) {
   }
 
   IOConfigHandlerFBMultiSlave::~IOConfigHandlerFBMultiSlave() {
@@ -60,7 +56,7 @@ namespace forte::io {
   }
 
   void IOConfigHandlerFBMultiSlave::executeEvent(TEventID paEIID, CEventChainExecutionThread *const paECET) {
-    if (BusAdapterIn().INIT() == paEIID) {    
+    if (BusAdapterIn().INIT() == paEIID) {
       if (BusAdapterIn().var_QI == true) {
         // Handle initialization event
         const char *const error = handleInitEvent();
@@ -83,7 +79,9 @@ namespace forte::io {
             if (inConfigPin != nullptr) {
               BusAdapterOut().getDeviceConfigPin(it)->setValue(*inConfigPin);
             } else {
-              DEVLOG_WARNING("[IOConfigHandlerFBMultiSlave] Unable to get device config pin #%d. Skip adapter configuration\n",it);
+              DEVLOG_WARNING(
+                  "[IOConfigHandlerFBMultiSlave] Unable to get device config pin #%d. Skip adapter configuration\n",
+                  it);
             }
           }
 
@@ -172,7 +170,7 @@ namespace forte::io {
 
     IODeviceMultiController &controller = getController();
 
-    if(!createSlaveHandler()) {
+    if (!createSlaveHandler()) {
       DEVLOG_ERROR("[IOConfigHandlerFBMultiSlave] Create Slave handler failed\n");
       return "[IOConfigHandlerFBMultiSlave] Create Slave handler failed";
     }
@@ -192,4 +190,4 @@ namespace forte::io {
     return nullptr;
   }
 
-}
+} // namespace forte::io
