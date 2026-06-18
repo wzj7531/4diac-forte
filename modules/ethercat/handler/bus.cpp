@@ -259,16 +259,6 @@ namespace forte::eclipse4diac::io::ethercat {
         return;
       }
 
-      // struct sched_param param = {};
-      // param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-      // if(sched_setscheduler(0, SCHED_FIFO, &param)) {
-      //   DEVLOG_WARNING("ethercat[BusHandler]: sched_setscheduler failed:%s,(Master ID: %u)\n", strerror(errno), mConfig.mECMasterId);
-      // }
-
-      // if(mlockall(MCL_CURRENT | MCL_FUTURE) == -1) {
-      //   DEVLOG_WARNING("ethercat[BusHandler]: Failed to lock memory: %s,(Master ID: %u)\n", strerror(errno), mConfig.mECMasterId);
-      // }
-
       ec_master_state_t ms;
       ecrt_master_state(mECMaster, &ms);
       DEVLOG_INFO("ethercat[BusHandler]: Initial state - Slave responding: %u, AL States: 0x%02x\n", ms.slaves_responding, ms.al_states);
