@@ -240,7 +240,11 @@ namespace forte::eclipse4diac::io::ethercat {
     if (nullptr == device) {
       return;
     }
-    EsiFileParser::getInstance().initDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
+    if (bus.isLoopPrepared()) {
+      EsiFileParser::getInstance().remapDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
+    } else {
+      EsiFileParser::getInstance().initDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
+    }
   }
 
   void FORTE_ECSlave::onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus) {

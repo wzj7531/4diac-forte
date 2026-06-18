@@ -235,7 +235,11 @@ namespace forte::eclipse4diac::io::ethercat {
     if (nullptr == device) {
       return;
     }
-    EsiFileParser::getInstance().initModuleIOHandles(module->moduleIdent(), device, module, *this);
+    if (bus.isLoopPrepared()) {
+      EsiFileParser::getInstance().remapModuleIOHandles(module->moduleIdent(), device, module, *this);
+    } else {
+      EsiFileParser::getInstance().initModuleIOHandles(module->moduleIdent(), device, module, *this);
+    }
   }
 
   void FORTE_ECModule::onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus) {

@@ -28,7 +28,8 @@ namespace forte::eclipse4diac::io::ethercat {
   }
 
   EntryReg::EntryReg(uint16_t paAlias, uint16_t paPosition, uint32_t paVendorId, uint32_t paProductCode, uint16_t paIndex, uint8_t paSubIndex, unsigned int *paOffset) :
-    mAlias(paAlias), mPosition(paPosition), mVendorId(paVendorId), mProductCode(paProductCode), mIndex(paIndex), mSubIndex(paSubIndex), mOffset(paOffset) {
+    mAlias(paAlias), mPosition(paPosition), mVendorId(paVendorId), mProductCode(paProductCode), mIndex(paIndex), mSubIndex(paSubIndex), mOffset(paOffset),
+    mDomainOffset(0), mOffsetValid(false) {
   }
 
   ECDeviceModel::ECDeviceModel(uint16_t paAlias, uint16_t paPosition, uint32_t paVendorId, uint32_t paProductCode, uint32_t paSlotIndexInc, uint32_t paSlotPdoInc) :
@@ -59,6 +60,24 @@ namespace forte::eclipse4diac::io::ethercat {
   void ECDeviceModel::addEntryReg(uint16_t paIndex, uint8_t paSubIndex, unsigned int *paOffset) {
     EntryReg reg {mAlias, mPosition, mVendorId, mProductCode, paIndex, paSubIndex, paOffset};
     mEntryRegList.push_back(reg);
+  }
+
+  EntryReg *ECDeviceModel::findEntryReg(uint16_t paIndex, uint8_t paSubIndex) {
+    for (EntryReg &reg : mEntryRegList) {
+      if (reg.mIndex == paIndex && reg.mSubIndex == paSubIndex) {
+        return &reg;
+      }
+    }
+    return nullptr;
+  }
+
+  void ECDeviceModel::restoreHandleDomainOffset(uint16_t paIndex, uint8_t paSubIndex, unsigned int *paHandleOffsetPtr) {
+    EntryReg *reg = findEntryReg(paIndex, paSubIndex);
+    if (reg == nullptr || !reg->mOffsetValid || paHandleOffsetPtr == nullptr) {
+      return;
+    }
+    *paHandleOffsetPtr = reg->mDomainOffset;
+    reg->mOffset = paHandleOffsetPtr;
   }
 
   void ECDeviceModel::cleanupSync() {

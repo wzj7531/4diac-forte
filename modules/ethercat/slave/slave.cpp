@@ -13,6 +13,7 @@
 
 #include "slave.h"
 #include "../handler/bus.h"
+#include "../slave/ec_device.h"
 #include "forte/io/mapper/io_mapper.h"
 #include "forte/util/criticalregion.h"
 
@@ -87,6 +88,26 @@ namespace forte::eclipse4diac::io::ethercat {
       mInputs.clear();
       mOutputs.clear();
       return;
+    }
+
+    if(mBus != nullptr && mBus->isLoopPrepared()) {
+      ECDeviceHandler *device = mBus->getParentDevice(this);
+      if(device != nullptr) {
+        auto persistHandleOffset = [&](ECSlaveHandle *handle) {
+          for(EntryReg &reg : device->mECDeviceModel.mEntryRegList) {
+            if(reg.mOffset == &handle->mECDomainDataOffset) {
+              reg.mDomainOffset = handle->mECDomainDataOffset;
+              reg.mOffsetValid = true;
+            }
+          }
+        };
+        for(ECSlaveHandle *handle : mInputs) {
+          persistHandleOffset(handle);
+        }
+        for(ECSlaveHandle *handle : mOutputs) {
+          persistHandleOffset(handle);
+        }
+      }
     }
 
     for(ECSlaveHandle *it : mInputs) {

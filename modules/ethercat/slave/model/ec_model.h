@@ -55,8 +55,10 @@ namespace forte::eclipse4diac::io::ethercat {
     uint16_t mIndex;
     uint8_t mSubIndex;
     unsigned int* mOffset;
+    unsigned int mDomainOffset;
+    bool mOffsetValid;
 
-    EntryReg() = default;
+    EntryReg() : mOffset(nullptr), mDomainOffset(0), mOffsetValid(false) {}
     EntryReg(uint16_t paAlias, uint16_t paPosition, uint32_t paVendorId, uint32_t paProductCode, uint16_t paIndex, uint8_t paSubIndex, unsigned int *paOffset);
   };
 
@@ -82,6 +84,8 @@ namespace forte::eclipse4diac::io::ethercat {
     void addPdo(uint16_t paPdoIndex,  SyncDir paDir);
     void addPdoEntry(uint16_t paPdoIndex, uint16_t paEntryIndex, uint8_t paSubIndex, uint8_t paBitLength);
     void addEntryReg(uint16_t paIndex, uint8_t paSubIndex, unsigned int *paOffset);
+    EntryReg *findEntryReg(uint16_t paIndex, uint8_t paSubIndex);
+    void restoreHandleDomainOffset(uint16_t paIndex, uint8_t paSubIndex, unsigned int *paHandleOffsetPtr);
 
     ec_sync_info_t *getSyncs();
     ec_pdo_entry_reg_t *getDomainRegs();

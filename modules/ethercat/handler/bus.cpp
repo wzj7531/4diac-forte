@@ -87,6 +87,16 @@ namespace forte::eclipse4diac::io::ethercat {
     slave->dropHandles();
   }
 
+  ECDeviceHandler *ECBusHandler::getParentDevice(ECSlaveHandler *paSlave) {
+    if(paSlave == nullptr) {
+      return nullptr;
+    }
+    if(paSlave->mSlaveType == ECSlaveHandler::SlaveType::ECModule) {
+      return static_cast<ECDeviceHandler *>(getSlave(paSlave->mSlaveIndex / 100 - 1));
+    }
+    return static_cast<ECDeviceHandler *>(paSlave);
+  }
+
   bool ECBusHandler::isSlaveAvailable(size_t paSlaveIndex) {
     return getSlave(paSlaveIndex) != nullptr;
   }

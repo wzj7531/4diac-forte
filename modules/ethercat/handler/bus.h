@@ -21,6 +21,7 @@
 namespace forte::eclipse4diac::io::ethercat {
 
   class ECSlaveHandler;
+  class ECDeviceHandler;
 
   class ECBusHandler : public forte::io::IODeviceMultiController {
 
@@ -57,9 +58,14 @@ namespace forte::eclipse4diac::io::ethercat {
       void dropSlaveHandles(size_t paSlaveIndex) override;
 
       void enableECCycle(bool paEnableFlag);
+      bool isLoopPrepared() const {
+        return mLoopPreparedFlag;
+      }
       bool isShuttingDown() const {
         return mIsShuttingDown;
       }
+
+      ECDeviceHandler *getParentDevice(ECSlaveHandler *paSlave);
 
     protected:
       const char* init() override;

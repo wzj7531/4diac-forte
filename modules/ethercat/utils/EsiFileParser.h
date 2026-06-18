@@ -41,6 +41,12 @@ namespace forte::eclipse4diac::io::ethercat {
                                ECModuleHandler *paModuleHandler,
                                FORTE_ECModule &paSlave);
 
+      void remapDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECSlave &paSlave);
+      void remapModuleIOHandles(uint32_t paModuleIdent,
+                                ECDeviceHandler *paDeviceHandler,
+                                ECModuleHandler *paModuleHandler,
+                                FORTE_ECModule &paSlave);
+
     private:
       bool loadEsiFileByKey(uint32_t paKey, std::string &paErrMsg);
       void init();
@@ -57,12 +63,14 @@ namespace forte::eclipse4diac::io::ethercat {
       void parseDevicePdo(const std::string &paPdoType,
                           TiXmlElement *paDeviceElement,
                           ECDeviceHandler *paDeviceHandler,
-                          FORTE_ECSlave &paSlave);
+                          FORTE_ECSlave &paSlave,
+                          bool paRemapOnly = false);
       void parseModulePdo(const std::string &paPdoType,
                           TiXmlElement *paModuleElement,
                           ECDeviceHandler *paDeviceHandler,
                           ECModuleHandler *paModuleHandler,
-                          FORTE_ECModule &paSlave);
+                          FORTE_ECModule &paSlave,
+                          bool paRemapOnly = false);
 
       void getPdoSizeInfo(TiXmlElement *paElement,
                           FORTE_ECSlave &paSlave,
