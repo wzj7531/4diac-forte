@@ -15,6 +15,7 @@
 
 #include "handle.h"
 #include "forte/io/mapper/io_mapper.h"
+#include <vector>
 
 namespace forte::eclipse4diac::io::ethercat {
 
@@ -83,8 +84,8 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void dropHandles();
 
-      unsigned char *mUpdateSendImage;
-      unsigned char *mUpdateRecvImage;
+      std::vector<unsigned char> mUpdateSendImage;
+      std::vector<unsigned char> mUpdateRecvImage;
       arch::CSyncObject mUpdateMutex;
 
       void initBuffer(uint16_t paDataSendLength, uint16_t paDataRecvLength);
@@ -101,7 +102,7 @@ namespace forte::eclipse4diac::io::ethercat {
       uint16_t mDataRecvLength;
       DeviceStatus mStatus;
       DeviceStatus mOldStatus;
-      unsigned char *mUpdateRecvImageOld;
+      std::vector<unsigned char> mUpdateRecvImageOld;
 
       arch::CSyncObject mHandleMutex;
       std::vector<ECDeviceHandle *> mInputs;

@@ -16,6 +16,7 @@
 #include "../device/ec_device.h"
 #include "forte/io/mapper/io_mapper.h"
 #include "forte/util/criticalregion.h"
+#include <algorithm>
 
 namespace forte::eclipse4diac::io::ethercat {
   ECBusDeviceHandler::ECBusDeviceHandler(ECBusHandler *paBus,
@@ -25,9 +26,6 @@ namespace forte::eclipse4diac::io::ethercat {
       mDeviceIndex(paDeviceIndex),
       mDeviceType(paDeviceType),
       mBus(paBus),
-      mUpdateSendImage(nullptr),
-      mUpdateRecvImage(nullptr),
-      mUpdateRecvImageOld(nullptr),
       mDataSendLength(0),
       mDataRecvLength(0),
       mStatus(NotInitialized),
@@ -36,10 +34,6 @@ namespace forte::eclipse4diac::io::ethercat {
 
   ECBusDeviceHandler::~ECBusDeviceHandler() {
     dropHandles();
-
-    delete[] mUpdateSendImage;
-    delete[] mUpdateRecvImage;
-    delete[] mUpdateRecvImageOld;
 
     if (mDelegate != nullptr) {
       if(mBus != nullptr && mBus->isShuttingDown()) {
@@ -54,13 +48,9 @@ namespace forte::eclipse4diac::io::ethercat {
     mDataSendLength = paDataSendLength;
     mDataRecvLength = paDataRecvLength;
 
-    mUpdateSendImage = new unsigned char[mDataSendLength];
-    mUpdateRecvImage = new unsigned char[mDataRecvLength];
-    mUpdateRecvImageOld = new unsigned char[mDataRecvLength];
-
-    memset(mUpdateSendImage, 0, mDataSendLength);
-    memset(mUpdateRecvImage, 0, mDataRecvLength);
-    memset(mUpdateRecvImageOld, 0, mDataRecvLength);
+    mUpdateSendImage.assign(paDataSendLength, 0);
+    mUpdateRecvImage.assign(paDataRecvLength, 0);
+    mUpdateRecvImageOld.assign(paDataRecvLength, 0);
   }
 
   void ECBusDeviceHandler::update(uint8_t *paECDomainData) {
@@ -73,7 +63,7 @@ namespace forte::eclipse4diac::io::ethercat {
       }
     }
 
-    memcpy(mUpdateRecvImageOld, mUpdateRecvImage, mDataRecvLength);
+    std::copy(mUpdateRecvImage.begin(), mUpdateRecvImage.end(), mUpdateRecvImageOld.begin());
 
     for(ECDeviceHandle *handle : mOutputs) {
       handle->syncDomainData(paECDomainData);

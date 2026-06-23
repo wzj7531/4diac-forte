@@ -16,6 +16,7 @@
 #include "forte/io/mapper/io_handle.h"
 #include "forte/arch/forte_sync.h"
 #include "endian.h"
+#include <span>
 #include <string>
 
 namespace forte::eclipse4diac::io::ethercat {
@@ -31,7 +32,7 @@ namespace forte::eclipse4diac::io::ethercat {
                     CIEC_ANY::EDataTypeID type,
                     uint8_t paOffset,
                     const std::string &paHandleId,
-                    ECBusDeviceHandler *paDevice);
+                    ECBusDeviceHandler &paDevice);
       ~ECDeviceHandle() override;
 
       const std::string &handleId() const {
@@ -45,7 +46,7 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void set(const CIEC_ANY &) override;
       void get(CIEC_ANY &) override;
-      bool equal(unsigned char *);
+      bool equal(std::span<const unsigned char> paOldBuffer);
 
     protected:
 			static constexpr bool IS_LITTLE_ENDIAN = __BYTE_ORDER == __LITTLE_ENDIAN;	
@@ -75,22 +76,22 @@ namespace forte::eclipse4diac::io::ethercat {
 				return hostLeEndianSwap(value);
 			}
 
-			const CIEC_BYTE getByteValue(const unsigned char *paBuffer);
-			const CIEC_WORD getWordValue(const unsigned char *paBuffer);
-			const CIEC_DWORD getDWordValue(const unsigned char *paBuffer);
-			const CIEC_LWORD getLWordValue(const unsigned char *paBuffer);
+			const CIEC_BYTE getByteValue(std::span<const unsigned char> paBuffer);
+			const CIEC_WORD getWordValue(std::span<const unsigned char> paBuffer);
+			const CIEC_DWORD getDWordValue(std::span<const unsigned char> paBuffer);
+			const CIEC_LWORD getLWordValue(std::span<const unsigned char> paBuffer);
         
       virtual void reset() {}
       void onObserver(forte::io::IOObserver *paObserver) override;
       void dropObserver() override;
 			void syncDomainData(uint8_t *paECDomainData);
 
-      unsigned char *mBuffer;
+      std::span<unsigned char> mBuffer;
       const uint8_t mOffset;
 
       unsigned int mECDomainDataOffset;
-      ECBusDeviceHandler *mDevice;
-			arch::CSyncObject *mUpdateMutex;
+      ECBusDeviceHandler &mDevice;
+      arch::CSyncObject &mUpdateMutex;
 
 			size_t mByteLength;
       std::string mHandleId;

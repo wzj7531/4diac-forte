@@ -25,17 +25,17 @@ namespace forte::eclipse4diac::io::ethercat {
                                 CIEC_ANY::EDataTypeID paType,
                                 uint8_t paOffset,
                                 const std::string &paHandleId,
-                                ECBusDeviceHandler *paDevice) :
+                                ECBusDeviceHandler &paDevice) :
       IOHandle(paController, paDirection, paType),
       mOffset(paOffset),
-      mDevice(paDevice),
       mECDomainDataOffset(0),
-      mUpdateMutex(&mDevice->mUpdateMutex),
+      mDevice(paDevice),
+      mUpdateMutex(mDevice.mUpdateMutex),
       mHandleId(paHandleId) {
     if(paDirection == forte::io::IOMapper::In){
-      mBuffer = mDevice->mUpdateRecvImage;
+      mBuffer = std::span<unsigned char>(mDevice.mUpdateRecvImage.data(), mDevice.mUpdateRecvImage.size());
     } else if(paDirection == forte::io::IOMapper::Out) {
-      mBuffer = mDevice->mUpdateSendImage;
+      mBuffer = std::span<unsigned char>(mDevice.mUpdateSendImage.data(), mDevice.mUpdateSendImage.size());
     }
 
     switch (paType) {
@@ -62,9 +62,9 @@ namespace forte::eclipse4diac::io::ethercat {
   void ECDeviceHandle::syncDomainData(uint8_t *paECDomainData) {
     uint8_t *ecDomainData = paECDomainData + mECDomainDataOffset;
     if(isInput()) {
-      memcpy(mBuffer + mOffset, ecDomainData, mByteLength);
+      memcpy(mBuffer.data() + mOffset, ecDomainData, mByteLength);
     } else if(isOutput()) {
-      memcpy(ecDomainData, mBuffer + mOffset, mByteLength);
+      memcpy(ecDomainData, mBuffer.data() + mOffset, mByteLength);
     }
   }
 
@@ -72,25 +72,25 @@ namespace forte::eclipse4diac::io::ethercat {
     switch (mType) {
       case CIEC_ANY::EDataTypeID::e_BYTE: {
         uint8_t value = static_cast<const CIEC_BYTE &>(paValue);
-        memcpy(mBuffer + mOffset, &value, sizeof(uint8_t));
+        memcpy(mBuffer.data() + mOffset, &value, sizeof(uint8_t));
       }
       break;
       case CIEC_ANY::EDataTypeID::e_WORD: {
         uint16_t value = static_cast<const CIEC_WORD &>(paValue);
         uint16_t littleEndValue = hostToLittleEndian(value);
-        memcpy(mBuffer + mOffset, &littleEndValue, sizeof(uint16_t));
+        memcpy(mBuffer.data() + mOffset, &littleEndValue, sizeof(uint16_t));
       }
       break;
       case CIEC_ANY::EDataTypeID::e_DWORD: {
         uint32_t value = static_cast<const CIEC_DWORD &>(paValue);
         uint32_t littleEndValue = hostToLittleEndian(value);
-        memcpy(mBuffer + mOffset, &littleEndValue, sizeof(uint32_t));
+        memcpy(mBuffer.data() + mOffset, &littleEndValue, sizeof(uint32_t));
       }
       break;
       case CIEC_ANY::EDataTypeID::e_LWORD: {
         uint64_t value = static_cast<const CIEC_LWORD &>(paValue);
         uint64_t littleEndValue = hostToLittleEndian(value);
-        memcpy(mBuffer + mOffset, &littleEndValue, sizeof(uint64_t));
+        memcpy(mBuffer.data() + mOffset, &littleEndValue, sizeof(uint64_t));
       }
       break;
       default:
@@ -119,7 +119,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  bool ECDeviceHandle::equal(unsigned char *paOldBuffer) {
+  bool ECDeviceHandle::equal(std::span<const unsigned char> paOldBuffer) {
     bool result = false;
 
     switch (mType){
@@ -144,28 +144,27 @@ namespace forte::eclipse4diac::io::ethercat {
     return result;
   }
 
-  const CIEC_BYTE ECDeviceHandle::getByteValue(const unsigned char* paBuffer){
-    uint8_t *p = (uint8_t*)(paBuffer + mOffset);
-    return CIEC_BYTE(*p);
+  const CIEC_BYTE ECDeviceHandle::getByteValue(std::span<const unsigned char> paBuffer){
+    return CIEC_BYTE(paBuffer[mOffset]);
   }
 
-  const CIEC_WORD ECDeviceHandle::getWordValue(const unsigned char* paBuffer){
+  const CIEC_WORD ECDeviceHandle::getWordValue(std::span<const unsigned char> paBuffer){
     uint16_t value;
-    memcpy(&value, paBuffer + mOffset, sizeof(uint16_t));
+    memcpy(&value, paBuffer.data() + mOffset, sizeof(uint16_t));
     uint16_t hostValue = littleEndianToHost(value);   
     return CIEC_WORD(hostValue);
   }
 
-  const CIEC_DWORD ECDeviceHandle::getDWordValue(const unsigned char* paBuffer){
+  const CIEC_DWORD ECDeviceHandle::getDWordValue(std::span<const unsigned char> paBuffer){
     uint32_t value;
-    memcpy(&value, paBuffer + mOffset, sizeof(uint32_t));
+    memcpy(&value, paBuffer.data() + mOffset, sizeof(uint32_t));
     uint32_t hostValue = littleEndianToHost(value);  
     return CIEC_DWORD(hostValue);
   }
 
-  const CIEC_LWORD ECDeviceHandle::getLWordValue(const unsigned char* paBuffer){
+  const CIEC_LWORD ECDeviceHandle::getLWordValue(std::span<const unsigned char> paBuffer){
     uint64_t value;
-    memcpy(&value, paBuffer + mOffset, sizeof(uint64_t));
+    memcpy(&value, paBuffer.data() + mOffset, sizeof(uint64_t));
     uint64_t hostValue = littleEndianToHost(value);
     return CIEC_LWORD(hostValue);
   }

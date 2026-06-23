@@ -166,13 +166,13 @@ namespace forte::eclipse4diac::io::ethercat {
 
     switch (desc.mByteLength){
       case 1:
-        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_BYTE, desc.mOffset, desc.mId, device);
+        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_BYTE, desc.mOffset, desc.mId, *device);
       case 2:
-        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_WORD, desc.mOffset, desc.mId, device);
+        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_WORD, desc.mOffset, desc.mId, *device);
       case 4:
-        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_DWORD, desc.mOffset, desc.mId, device);
+        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_DWORD, desc.mOffset, desc.mId, *device);
       case 8:
-        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_LWORD, desc.mOffset, desc.mId, device);
+        return new ECDeviceHandle(this, desc.mDirection, CIEC_ANY::EDataTypeID::e_LWORD, desc.mOffset, desc.mId, *device);
       default:
         DEVLOG_ERROR("ethercat[BusHandler]: Unsupported handle byte length %u at device %zu offset %u.\n",
                      static_cast<unsigned int>(desc.mByteLength),
