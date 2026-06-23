@@ -11,10 +11,10 @@
  *   Sichuan Qunyuan Technology Co., Ltd. - initial API and implementation
  *******************************************************************************/
 
-#include "ECSlave.h"
+#include "ECDevice.h"
 
 #include "../handler/bus.h"
-#include "../slave/ec_device.h"
+#include "../device/ec_device.h"
 #include "../utils/EsiFileParser.h"
 #include "forte/util/string_utils.h"
 
@@ -34,19 +34,19 @@ namespace forte::eclipse4diac::io::ethercat {
     const auto cEventOutputTypeIds = std::array{"Event"_STRID, "Event"_STRID};
   } // namespace
 
-  DEFINE_GENERIC_FIRMWARE_FB(FORTE_ECSlave, "eclipse4diac::io::ethercat::GEN_ECSlave"_STRID)
+  DEFINE_GENERIC_FIRMWARE_FB(FORTE_ECDevice, "eclipse4diac::io::ethercat::GEN_ECDevice"_STRID)
 
-  const TForteUInt8 FORTE_ECSlave::scmSlaveConfigurationIO[] = {};
-  const TForteUInt8 FORTE_ECSlave::scmSlaveConfigurationIONum = 0;
+  const TForteUInt8 FORTE_ECDevice::scmSlaveConfigurationIO[] = {};
+  const TForteUInt8 FORTE_ECDevice::scmSlaveConfigurationIONum = 0;
 
-  FORTE_ECSlave::FORTE_ECSlave(const forte::StringId paInstanceNameId,
+  FORTE_ECDevice::FORTE_ECDevice(const forte::StringId paInstanceNameId,
                                CFBContainer &paContainer,
-                               ECSlaveHandler::SlaveType paSlaveType) :
+                               ECBusDeviceHandler::DeviceType paDeviceType) :
       CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>(paContainer,
                                            paInstanceNameId,
                                            scmSlaveConfigurationIO,
                                            scmSlaveConfigurationIONum,
-                                           static_cast<int>(paSlaveType)),
+                                           static_cast<int>(paDeviceType)),
       conn_MAPO(*this, 0),
       conn_IND(*this, 1),
       conn_QI(nullptr),
@@ -57,7 +57,7 @@ namespace forte::eclipse4diac::io::ethercat {
       var_BusAdapterOut("BusAdapterOut"_STRID, *this, 0) {
   }
 
-  FORTE_ECSlave::~FORTE_ECSlave() {
+  FORTE_ECDevice::~FORTE_ECDevice() {
     const size_t numDIs = getFBInterfaceSpec().getNumDIs();
     const size_t genOffset = getGenDIOffset();
     const size_t safeGenDINums = (numDIs > genOffset) ? (numDIs - genOffset) : 0;
@@ -66,7 +66,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void FORTE_ECSlave::readInputData(const TEventID paEIID) {
+  void FORTE_ECDevice::readInputData(const TEventID paEIID) {
     if (paEIID == scmEventMAPID) {
       readData(0, var_QI, conn_QI);
       readData(1, var_Config, conn_Config);
@@ -76,7 +76,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void FORTE_ECSlave::writeOutputData(const TEventID paEIID) {
+  void FORTE_ECDevice::writeOutputData(const TEventID paEIID) {
     const size_t numDIs = getFBInterfaceSpec().getNumDIs();
     switch (paEIID) {
       case scmEventMAPOID: {
@@ -92,7 +92,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  CIEC_ANY *FORTE_ECSlave::getDI(const TPortId paIndex) {
+  CIEC_ANY *FORTE_ECDevice::getDI(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &var_QI;
       case 1: return &var_Config;
@@ -100,7 +100,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  CIEC_ANY *FORTE_ECSlave::getDO(const TPortId paIndex) {
+  CIEC_ANY *FORTE_ECDevice::getDO(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &var_QO;
       case 1: return &var_STATUS;
@@ -108,7 +108,7 @@ namespace forte::eclipse4diac::io::ethercat {
     return nullptr;
   }
 
-  CEventConnection *FORTE_ECSlave::getEOConUnchecked(const TPortId paIndex) {
+  CEventConnection *FORTE_ECDevice::getEOConUnchecked(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &conn_MAPO;
       case 1: return &conn_IND;
@@ -116,7 +116,7 @@ namespace forte::eclipse4diac::io::ethercat {
     return nullptr;
   }
 
-  CDataConnection **FORTE_ECSlave::getDIConUnchecked(const TPortId paIndex) {
+  CDataConnection **FORTE_ECDevice::getDIConUnchecked(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &conn_QI;
       case 1: return &conn_Config;
@@ -124,7 +124,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  CDataConnection *FORTE_ECSlave::getDOConUnchecked(const TPortId paIndex) {
+  CDataConnection *FORTE_ECDevice::getDOConUnchecked(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &conn_QO;
       case 1: return &conn_STATUS;
@@ -132,15 +132,15 @@ namespace forte::eclipse4diac::io::ethercat {
     return nullptr;
   }
 
-  forte::IPlugPin *FORTE_ECSlave::getPlugPinUnchecked(const size_t paIndex) {
+  forte::IPlugPin *FORTE_ECDevice::getPlugPinUnchecked(const size_t paIndex) {
     return (paIndex == 0) ? &var_BusAdapterOut : nullptr;
   }
 
-  forte::ISocketPin *FORTE_ECSlave::getSocketPinUnchecked(const size_t paIndex) {
+  forte::ISocketPin *FORTE_ECDevice::getSocketPinUnchecked(const size_t paIndex) {
     return (paIndex == 0) ? &var_BusAdapterIn : nullptr;
   }
 
-  void FORTE_ECSlave::createGenInputData() {
+  void FORTE_ECDevice::createGenInputData() {
     const size_t n = getGenDINums();
     mGenDIs = std::make_unique<CIEC_ANY *[]>(n);
     for (size_t i = 0; i < n; ++i) {
@@ -148,7 +148,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  bool FORTE_ECSlave::createInterfaceSpec(const char *paConfigString, SFBInterfaceSpec &paInterfaceSpec) {
+  bool FORTE_ECDevice::createInterfaceSpec(const char *paConfigString, SFBInterfaceSpec &paInterfaceSpec) {
     std::string tempstring(paConfigString);
     const char *sParamA = nullptr;
     const char *sParamB = nullptr;
@@ -177,7 +177,7 @@ namespace forte::eclipse4diac::io::ethercat {
     return true;
   }
 
-  void FORTE_ECSlave::configureDIDOs(const char *paDIConfigString,
+  void FORTE_ECDevice::configureDIDOs(const char *paDIConfigString,
                                      const char *paDOConfigString,
                                      SFBInterfaceSpec &paInterfaceSpec) {
     mDiNames.clear();
@@ -199,9 +199,9 @@ namespace forte::eclipse4diac::io::ethercat {
     paInterfaceSpec.mDONames = mDoNames;
   }
 
-  bool FORTE_ECSlave::createSlaveHandler() {
+  bool FORTE_ECDevice::createSlaveHandler() {
     auto &bus = *static_cast<ECBusHandler *>(&getController());
-    auto *handler = new ECDeviceHandler(&bus, ECSlaveHandler::SlaveType::ECSlave, mIndex);
+    auto *handler = new ECDeviceHandler(&bus, ECBusDeviceHandler::DeviceType::ECDevice, mIndex);
     ECDeviceHandler::Config cfg{};
     cfg.mAlias = static_cast<TForteUInt16>(Config().Alias);
     cfg.mPosition = static_cast<TForteUInt16>(Config().Position);
@@ -209,11 +209,11 @@ namespace forte::eclipse4diac::io::ethercat {
     cfg.mProductCode = static_cast<TForteUInt32>(Config().ProductCode);
     handler->setConfig(&cfg);
     handler->mDelegate = this;
-    bus.addSlave(handler);
+    bus.addDevice(handler);
     return true;
   }
 
-  const char *FORTE_ECSlave::init() {
+  const char *FORTE_ECDevice::init() {
     const auto productCode = static_cast<TForteUInt32>(Config().ProductCode);
     std::string errMsg;
     if (!EsiFileParser::getInstance().loadDevice(productCode, errMsg)) {
@@ -223,20 +223,20 @@ namespace forte::eclipse4diac::io::ethercat {
     return nullptr;
   }
 
-  void FORTE_ECSlave::deInit() { 
+  void FORTE_ECDevice::deInit() { 
     auto &bus = *static_cast<ECBusHandler *>(&getController()); 
-    ECSlaveHandler *slave = bus.getSlave(mIndex);
-    if (slave != nullptr && slave->mDelegate == this) {
-      slave->mDelegate = nullptr;
+    ECBusDeviceHandler *device = bus.getDevice(mIndex);
+    if (device != nullptr && device->mDelegate == this) {
+      device->mDelegate = nullptr;
     }
   }
 
-  void FORTE_ECSlave::initHandles() {
+  void FORTE_ECDevice::initHandles() {
     if (!QI()) {
       return;
     }
     auto &bus = *static_cast<ECBusHandler *>(&getController());
-    auto *device = static_cast<ECDeviceHandler *>(bus.getSlave(mIndex));
+    auto *device = static_cast<ECDeviceHandler *>(bus.getDevice(mIndex));
     if (nullptr == device) {
       return;
     }
@@ -247,20 +247,20 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void FORTE_ECSlave::onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus) {
+  void FORTE_ECDevice::onDeviceStatus(ECBusDeviceHandler::DeviceStatus paStatus, ECBusDeviceHandler::DeviceStatus) {
     switch (paStatus) {
-      case ECSlaveHandler::OK: STATUS() = scmOK; break;
-      case ECSlaveHandler::Error: STATUS() = u"Error"_WSTRING; break;
-      case ECSlaveHandler::NotInitialized: STATUS() = u"NotInitialized"_WSTRING; break;
+      case ECBusDeviceHandler::OK: STATUS() = scmOK; break;
+      case ECBusDeviceHandler::Error: STATUS() = u"Error"_WSTRING; break;
+      case ECBusDeviceHandler::NotInitialized: STATUS() = u"NotInitialized"_WSTRING; break;
       default: STATUS() = u"Unknown"_WSTRING; break;
     }
     sendOutputEvent(scmEventINDID, getEventChainExecutor());
   }
 
-  void FORTE_ECSlave::onSlaveDestroy() {
+  void FORTE_ECDevice::onDeviceDestroy() {
     deInit();
     QO() = false_BOOL;
-    STATUS() = u"Slave destroyed"_WSTRING;
+    STATUS() = u"Device destroyed"_WSTRING;
   }
 
 } // namespace forte::eclipse4diac::io::ethercat

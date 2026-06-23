@@ -11,19 +11,19 @@
  *   Sichuan Qunyuan Technology Co., Ltd. - initial API and implementation
  *******************************************************************************/
 
-#include "slave.h"
+#include "bus_device_handler.h"
 #include "../handler/bus.h"
-#include "../slave/ec_device.h"
+#include "../device/ec_device.h"
 #include "forte/io/mapper/io_mapper.h"
 #include "forte/util/criticalregion.h"
 
 namespace forte::eclipse4diac::io::ethercat {
-  ECSlaveHandler::ECSlaveHandler(ECBusHandler *paBus,
-                                 SlaveType paSlaveType,
-                                 size_t paSlaveIndex) : 
+  ECBusDeviceHandler::ECBusDeviceHandler(ECBusHandler *paBus,
+                                 DeviceType paDeviceType,
+                                 size_t paDeviceIndex) : 
       mDelegate(nullptr),
-      mSlaveIndex(paSlaveIndex),
-      mSlaveType(paSlaveType),
+      mDeviceIndex(paDeviceIndex),
+      mDeviceType(paDeviceType),
       mBus(paBus),
       mUpdateSendImage(nullptr),
       mUpdateRecvImage(nullptr),
@@ -34,7 +34,7 @@ namespace forte::eclipse4diac::io::ethercat {
       mOldStatus(NotInitialized) {
   }
 
-  ECSlaveHandler::~ECSlaveHandler() {
+  ECBusDeviceHandler::~ECBusDeviceHandler() {
     dropHandles();
 
     delete[] mUpdateSendImage;
@@ -46,11 +46,11 @@ namespace forte::eclipse4diac::io::ethercat {
         mDelegate = nullptr;
         return;
       }
-      mDelegate->onSlaveDestroy();
+      mDelegate->onDeviceDestroy();
     }
   }
 
-  void ECSlaveHandler::initBuffer(uint16_t paDataSendLength, uint16_t paDataRecvLength) {
+  void ECBusDeviceHandler::initBuffer(uint16_t paDataSendLength, uint16_t paDataRecvLength) {
     mDataSendLength = paDataSendLength;
     mDataRecvLength = paDataRecvLength;
 
@@ -63,10 +63,10 @@ namespace forte::eclipse4diac::io::ethercat {
     memset(mUpdateRecvImageOld, 0, mDataRecvLength);
   }
 
-  void ECSlaveHandler::update(uint8_t *paECDomainData) {
+  void ECBusDeviceHandler::update(uint8_t *paECDomainData) {
     util::CCriticalRegion critialRegion(mHandleMutex);
 
-    for(ECSlaveHandle *handle : mInputs) {
+    for(ECDeviceHandle *handle : mInputs) {
       handle->syncDomainData(paECDomainData);
       if(handle->hasObserver() && !handle->equal(mUpdateRecvImageOld)){
         handle->onChange();
@@ -75,12 +75,12 @@ namespace forte::eclipse4diac::io::ethercat {
 
     memcpy(mUpdateRecvImageOld, mUpdateRecvImage, mDataRecvLength);
 
-    for(ECSlaveHandle *handle : mOutputs) {
+    for(ECDeviceHandle *handle : mOutputs) {
       handle->syncDomainData(paECDomainData);
     }
   }
 
-  void ECSlaveHandler::dropHandles() {
+  void ECBusDeviceHandler::dropHandles() {
     util::CCriticalRegion criticalRegion(mHandleMutex);
     forte::io::IOMapper &mapper = forte::io::IOMapper::getInstance();
 
@@ -93,7 +93,7 @@ namespace forte::eclipse4diac::io::ethercat {
     if(mBus != nullptr && mBus->isLoopPrepared()) {
       ECDeviceHandler *device = mBus->getParentDevice(this);
       if(device != nullptr) {
-        auto persistHandleOffset = [&](ECSlaveHandle *handle) {
+        auto persistHandleOffset = [&](ECDeviceHandle *handle) {
           for(EntryReg &reg : device->mECDeviceModel.mEntryRegList) {
             if(reg.mOffset == &handle->mECDomainDataOffset) {
               reg.mDomainOffset = handle->mECDomainDataOffset;
@@ -101,21 +101,21 @@ namespace forte::eclipse4diac::io::ethercat {
             }
           }
         };
-        for(ECSlaveHandle *handle : mInputs) {
+        for(ECDeviceHandle *handle : mInputs) {
           persistHandleOffset(handle);
         }
-        for(ECSlaveHandle *handle : mOutputs) {
+        for(ECDeviceHandle *handle : mOutputs) {
           persistHandleOffset(handle);
         }
       }
     }
 
-    for(ECSlaveHandle *it : mInputs) {
+    for(ECDeviceHandle *it : mInputs) {
       mapper.deregisterHandle(it->handleId());
       delete it;
     }
 
-    for(ECSlaveHandle *it : mOutputs) {
+    for(ECDeviceHandle *it : mOutputs) {
       mapper.deregisterHandle(it->handleId());
       delete it;
     }
@@ -124,14 +124,14 @@ namespace forte::eclipse4diac::io::ethercat {
     mOutputs.clear();
   }
 
-  void ECSlaveHandler::addHandle(std::vector<ECSlaveHandle *> &paList, ECSlaveHandle *paHandle) {
+  void ECBusDeviceHandler::addHandle(std::vector<ECDeviceHandle *> &paList, ECDeviceHandle *paHandle) {
     util::CCriticalRegion criticalRegion(mHandleMutex);
     paList.push_back(paHandle);
 
     //TODO Maybe send indication event after connecting
   }
 
-  ECSlaveHandle *ECSlaveHandler::getHandle(std::vector<ECSlaveHandle *> &paList, size_t paIndex) {
+  ECDeviceHandle *ECBusDeviceHandler::getHandle(std::vector<ECDeviceHandle *> &paList, size_t paIndex) {
     if(paList.size() <= paIndex) {
       return nullptr;
     }

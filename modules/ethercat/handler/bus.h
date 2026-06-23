@@ -15,12 +15,12 @@
 
 #include <string>
 #include <ecrt.h>
-#include "../slave/slave.h"
+#include "../device/bus_device_handler.h"
 #include <forte/io/device/io_controller_multi.h>
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class ECSlaveHandler;
+  class ECBusDeviceHandler;
   class ECDeviceHandler;
 
   class ECBusHandler : public forte::io::IODeviceMultiController {
@@ -29,7 +29,7 @@ namespace forte::eclipse4diac::io::ethercat {
       explicit ECBusHandler(CDeviceExecution &paDeviceExecution);
 
       struct Config : IODeviceController::Config {
-        unsigned int mECMasterId;
+        unsigned int mECControllerId;
         unsigned int mUpdateInterval;
       };
 
@@ -40,10 +40,10 @@ namespace forte::eclipse4diac::io::ethercat {
 
           HandleDescriptor(std::string const &paId,
                            forte::io::IOMapper::Direction paDirection,
-                           size_t paSlaveIndex,
+                           size_t paDeviceIndex,
                            uint8_t paOffset,
                            uint8_t paByteLength) : 
-              IODeviceMultiController::HandleDescriptor(paId, paDirection, paSlaveIndex),
+              IODeviceMultiController::HandleDescriptor(paId, paDirection, paDeviceIndex),
               mOffset(paOffset),
               mByteLength(paByteLength){
           }
@@ -51,11 +51,11 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void setConfig(struct IODeviceController::Config *paConfig) override;
 
-      void addSlave(ECSlaveHandler *slave);
-      ECSlaveHandler *getSlave(size_t paSlaveIndex);
+      void addDevice(ECBusDeviceHandler *device);
+      ECBusDeviceHandler *getDevice(size_t paDeviceIndex);
 
-      void addSlaveHandle(size_t paSlaveIndex, std::unique_ptr<forte::io::IOHandle> paHandle) override;
-      void dropSlaveHandles(size_t paSlaveIndex) override;
+      void addSlaveHandle(size_t paDeviceIndex, std::unique_ptr<forte::io::IOHandle> paHandle) override;
+      void dropSlaveHandles(size_t paDeviceIndex) override;
 
       void enableECCycle(bool paEnableFlag);
       bool isLoopPrepared() const {
@@ -65,7 +65,7 @@ namespace forte::eclipse4diac::io::ethercat {
         return mIsShuttingDown;
       }
 
-      ECDeviceHandler *getParentDevice(ECSlaveHandler *paSlave);
+      ECDeviceHandler *getParentDevice(ECBusDeviceHandler *paDevice);
 
     protected:
       const char* init() override;
@@ -80,13 +80,13 @@ namespace forte::eclipse4diac::io::ethercat {
       struct  Config mConfig;
       
       // Devices
-      std::vector<ECSlaveHandler *> mDevices;
+      std::vector<ECBusDeviceHandler *> mDevices;
       
     private:
-      bool isSlaveAvailable(size_t paSlaveIndex) override;
-      bool checkSlaveType(size_t paSlaveIndex, int paSlaveType);
+      bool isSlaveAvailable(size_t paDeviceIndex) override;
+      bool checkSlaveType(size_t paDeviceIndex, int paDeviceType) override;
       
-      ec_master_t *mECMaster;
+      ec_master_t *mECController;
       ec_domain_t *mECDomain;
       uint8_t *mECDomainPd;
 

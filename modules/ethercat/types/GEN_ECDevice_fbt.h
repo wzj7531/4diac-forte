@@ -13,15 +13,15 @@
 
 #pragma once
 
-#include "ECSlave.h"
+#include "ECDevice.h"
 
 namespace forte::eclipse4diac::io::ethercat {
-  class GEN_ECSlave : public FORTE_ECSlave {
-      DECLARE_GENERIC_FIRMWARE_FB(GEN_ECSlave)
+  class GEN_ECDevice : public FORTE_ECDevice {
+      DECLARE_GENERIC_FIRMWARE_FB(GEN_ECDevice)
 
     public:
-      GEN_ECSlave(const StringId paInstanceNameId, CFBContainer &paContainer);
-      ~GEN_ECSlave() override = default;
+      GEN_ECDevice(const StringId paInstanceNameId, CFBContainer &paContainer);
+      ~GEN_ECDevice() override = default;
 
       template<typename... Args>
       void evt_MAP(Args &&...paArgs) {

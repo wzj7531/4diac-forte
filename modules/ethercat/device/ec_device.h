@@ -13,15 +13,15 @@
 
 #pragma once
 
-#include "slave.h"
+#include "bus_device_handler.h"
 #include "model/ec_model.h"
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class ECDeviceHandler : public ECSlaveHandler {
+  class ECDeviceHandler : public ECBusDeviceHandler {
     
     public:
-      struct Config : ECSlaveHandler::Config {
+      struct Config : ECBusDeviceHandler::Config {
         uint16_t mAlias;
         uint16_t mPosition;
         uint32_t mVendorId;
@@ -30,9 +30,9 @@ namespace forte::eclipse4diac::io::ethercat {
 
       ECDeviceModel mECDeviceModel;
 
-      void setConfig(struct ECSlaveHandler::Config *paConfig) override;
+      void setConfig(struct ECBusDeviceHandler::Config *paConfig) override;
 
-      ECDeviceHandler(ECBusHandler *paBus, ECSlaveHandler::SlaveType paSlaveType, size_t paSlaveIndex);
+      ECDeviceHandler(ECBusHandler *paBus, ECBusDeviceHandler::DeviceType paDeviceType, size_t paDeviceIndex);
 
     protected:
       struct Config mConfig;

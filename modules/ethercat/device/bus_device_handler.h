@@ -20,19 +20,19 @@ namespace forte::eclipse4diac::io::ethercat {
 
 	class ECBusHandler;
 
-	class ECSlaveHandler {
+	class ECBusDeviceHandler {
 		
 		public:
 			friend class ECBusHandler;
 
-      enum SlaveStatus {
+      enum DeviceStatus {
         NotInitialized = 0,
         Error = 1,
         OK = 2
       };
 
-      enum SlaveType {
-        ECSlave = 0,
+      enum DeviceType {
+        ECDevice = 0,
         ECCoupler = 1,
         ECModule = 2
       };
@@ -42,18 +42,18 @@ namespace forte::eclipse4diac::io::ethercat {
 
       class Delegate {
         public:
-          virtual void onSlaveStatus(SlaveStatus paStatus, SlaveStatus paOldStatus) = 0;
-          virtual void onSlaveDestroy() = 0;
+          virtual void onDeviceStatus(DeviceStatus paStatus, DeviceStatus paOldStatus) = 0;
+          virtual void onDeviceDestroy() = 0;
       };
 
       virtual void setConfig(Config* paConfig) = 0;
       Delegate *mDelegate;
 
       size_t index() const {
-        return mSlaveIndex;
+        return mDeviceIndex;
       }
 
-      const SlaveType mSlaveType;
+      const DeviceType mDeviceType;
 
       uint16_t dataSendLength() const {
         return mDataSendLength;
@@ -65,15 +65,15 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void update(uint8_t *paECDomianPd);
 
-      ECSlaveHandle *getInputHandle(size_t paIndex) {
+      ECDeviceHandle *getInputHandle(size_t paIndex) {
         return getHandle(mInputs, paIndex);
       }
 
-      ECSlaveHandle *getOutputHandle(size_t paIndex) {
+      ECDeviceHandle *getOutputHandle(size_t paIndex) {
         return getHandle(mOutputs, paIndex);
       }
 
-      void addHandle(ECSlaveHandle *paHandle) {
+      void addHandle(ECDeviceHandle *paHandle) {
         switch (paHandle->getDirection()){
           case forte::io::IOMapper::In: addHandle(mInputs, paHandle); break;
           case forte::io::IOMapper::Out: addHandle(mOutputs, paHandle); break;
@@ -90,28 +90,28 @@ namespace forte::eclipse4diac::io::ethercat {
       void initBuffer(uint16_t paDataSendLength, uint16_t paDataRecvLength);
 
     protected:
-      size_t mSlaveIndex;
+      size_t mDeviceIndex;
       
-      ECSlaveHandler(ECBusHandler *paBus, SlaveType paSlaveType, size_t paSlaveIndex);
-      virtual ~ECSlaveHandler();
+      ECBusDeviceHandler(ECBusHandler *paBus, DeviceType paDeviceType, size_t paDeviceIndex);
+      virtual ~ECBusDeviceHandler();
 
       ECBusHandler *mBus;
 
       uint16_t mDataSendLength;
       uint16_t mDataRecvLength;
-      SlaveStatus mStatus;
-      SlaveStatus mOldStatus;
+      DeviceStatus mStatus;
+      DeviceStatus mOldStatus;
       unsigned char *mUpdateRecvImageOld;
 
       arch::CSyncObject mHandleMutex;
-      std::vector<ECSlaveHandle *> mInputs;
-      std::vector<ECSlaveHandle *> mOutputs;
-      void addHandle(std::vector<ECSlaveHandle *> &paList, ECSlaveHandle *paHandle);
-      ECSlaveHandle *getHandle(std::vector<ECSlaveHandle *> &paList, size_t paIndex);
+      std::vector<ECDeviceHandle *> mInputs;
+      std::vector<ECDeviceHandle *> mOutputs;
+      void addHandle(std::vector<ECDeviceHandle *> &paList, ECDeviceHandle *paHandle);
+      ECDeviceHandle *getHandle(std::vector<ECDeviceHandle *> &paList, size_t paIndex);
 
     private:
-      //! declared but undefined copy constructor as we don't want Slaves to be directly copied.
-      ECSlaveHandler(const ECSlaveHandler &);
+      //! declared but undefined copy constructor as we don't want devices to be directly copied.
+      ECBusDeviceHandler(const ECBusDeviceHandler &);
       
 	};
 }

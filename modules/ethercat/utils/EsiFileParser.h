@@ -13,8 +13,8 @@
 
 #pragma once
 
-#include "../slave/ec_device.h"
-#include "../slave/ec_module.h"
+#include "../device/ec_device.h"
+#include "../device/ec_module.h"
 #include "forte/util/singlet.h"
 
 #include <map>
@@ -25,7 +25,7 @@ class TiXmlElement;
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class FORTE_ECSlave;
+  class FORTE_ECDevice;
   class FORTE_ECModule;
 
   class EsiFileParser {
@@ -35,17 +35,17 @@ namespace forte::eclipse4diac::io::ethercat {
       bool loadDevice(uint32_t paProductCode, std::string &paErrMsg);
       bool loadModule(uint32_t paModuleIdent, std::string &paErrMsg);
 
-      void initDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECSlave &paSlave);
+      void initDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECDevice &paDevice);
       void initModuleIOHandles(uint32_t paModuleIdent,
                                ECDeviceHandler *paDeviceHandler,
                                ECModuleHandler *paModuleHandler,
-                               FORTE_ECModule &paSlave);
+                               FORTE_ECModule &paDevice);
 
-      void remapDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECSlave &paSlave);
+      void remapDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECDevice &paDevice);
       void remapModuleIOHandles(uint32_t paModuleIdent,
                                 ECDeviceHandler *paDeviceHandler,
                                 ECModuleHandler *paModuleHandler,
-                                FORTE_ECModule &paSlave);
+                                FORTE_ECModule &paDevice);
 
     private:
       bool loadEsiFileByKey(uint32_t paKey, std::string &paErrMsg);
@@ -63,22 +63,22 @@ namespace forte::eclipse4diac::io::ethercat {
       void parseDevicePdo(const std::string &paPdoType,
                           TiXmlElement *paDeviceElement,
                           ECDeviceHandler *paDeviceHandler,
-                          FORTE_ECSlave &paSlave,
+                          FORTE_ECDevice &paDevice,
                           bool paRemapOnly = false);
       void parseModulePdo(const std::string &paPdoType,
                           TiXmlElement *paModuleElement,
                           ECDeviceHandler *paDeviceHandler,
                           ECModuleHandler *paModuleHandler,
-                          FORTE_ECModule &paSlave,
+                          FORTE_ECModule &paDevice,
                           bool paRemapOnly = false);
 
       void getPdoSizeInfo(TiXmlElement *paElement,
-                          FORTE_ECSlave &paSlave,
+                          FORTE_ECDevice &paDevice,
                           uint16_t &paRcvBufferSize,
                           uint16_t &paSendBufferSize);
 
       void getPdoSizeInfo(TiXmlElement *paElement,
-                          FORTE_ECModule &paSlave,
+                          FORTE_ECModule &paDevice,
                           uint16_t &paRcvBufferSize,
                           uint16_t &paSendBufferSize);
 

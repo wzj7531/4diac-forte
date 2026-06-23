@@ -63,8 +63,8 @@ namespace forte::eclipse4diac::io::ethercat {
       CEventConnection conn_INITO;
 
       CDataConnection *conn_QI;
-      CDataConnection *conn_MasterId;
-      CDataConnection *conn_MasterIndex;
+      CDataConnection *conn_ControllerId;
+      CDataConnection *conn_ControllerIndex;
 
       COutDataConnection<CIEC_BOOL> conn_QO;
 
@@ -94,8 +94,8 @@ namespace forte::eclipse4diac::io::ethercat {
       CEventConnection conn_INIT;
 
       COutDataConnection<CIEC_BOOL> conn_QI;
-      COutDataConnection<CIEC_UINT> conn_MasterId;
-      COutDataConnection<CIEC_UINT> conn_MasterIndex;
+      COutDataConnection<CIEC_UINT> conn_ControllerId;
+      COutDataConnection<CIEC_UINT> conn_ControllerIndex;
 
     protected:
       CEventConnection *getEOConUnchecked(TPortId paEONum) override;

@@ -14,7 +14,7 @@
 #include "ECCoupler.h"
 
 #include "../handler/bus.h"
-#include "../slave/ec_device.h"
+#include "../device/ec_device.h"
 #include "forte/iec61131_functions/func_AND.h"
 
 using namespace forte::literals;
@@ -27,12 +27,12 @@ namespace forte::eclipse4diac::io::ethercat {
   DEFINE_FIRMWARE_FB(FORTE_ECCoupler, "eclipse4diac::io::ethercat::ECCoupler"_STRID)
 
   FORTE_ECCoupler::FORTE_ECCoupler(forte::StringId paInstanceNameId, CFBContainer &paContainer) :
-      FORTE_ECSlave(paInstanceNameId, paContainer, ECSlaveHandler::SlaveType::ECCoupler),
+      FORTE_ECDevice(paInstanceNameId, paContainer, ECBusDeviceHandler::DeviceType::ECCoupler),
       var_ModuleAdapterOut("ModuleAdapterOut"_STRID, *this, 1) {
   }
 
   bool FORTE_ECCoupler::createInterfaceSpec(const char *paConfigString, SFBInterfaceSpec &paInterfaceSpec) {
-    if (!FORTE_ECSlave::createInterfaceSpec(paConfigString, paInterfaceSpec)) {
+    if (!FORTE_ECDevice::createInterfaceSpec(paConfigString, paInterfaceSpec)) {
       return false;
     }
     paInterfaceSpec.mPlugNames = cCouplerPlugNames;
@@ -51,7 +51,7 @@ namespace forte::eclipse4diac::io::ethercat {
       }
     }
   
-    FORTE_ECSlave::executeEvent(paEIID, paECET);
+    FORTE_ECDevice::executeEvent(paEIID, paECET);
   }
 
   void FORTE_ECCoupler::forwardInitConfirmation(CEventChainExecutionThread *const paECET) {
@@ -77,7 +77,7 @@ namespace forte::eclipse4diac::io::ethercat {
 
   bool FORTE_ECCoupler::createSlaveHandler() {  
     auto &bus = *static_cast<ECBusHandler *>(&getController());
-    auto *handler = new ECDeviceHandler(&bus, ECSlaveHandler::SlaveType::ECCoupler, mIndex);
+    auto *handler = new ECDeviceHandler(&bus, ECBusDeviceHandler::DeviceType::ECCoupler, mIndex);
     ECDeviceHandler::Config cfg{};
     cfg.mAlias = static_cast<TForteUInt16>(Config().Alias);
     cfg.mPosition = static_cast<TForteUInt16>(Config().Position);
@@ -85,7 +85,7 @@ namespace forte::eclipse4diac::io::ethercat {
     cfg.mProductCode = static_cast<TForteUInt32>(Config().ProductCode);
     handler->setConfig(&cfg);
     handler->mDelegate = this;
-    bus.addSlave(handler);
+    bus.addDevice(handler);
     return true;
   }
 

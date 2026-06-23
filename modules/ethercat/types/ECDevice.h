@@ -14,8 +14,8 @@
 #pragma once
 
 #include "ECBusAdapter.h"
-#include "../structs/ECSlaveConfig.h"
-#include "../slave/slave.h"
+#include "../structs/ECDeviceConfig.h"
+#include "../device/bus_device_handler.h"
 #include "forte/adapter.h"
 #include "forte/datatypes/forte_bool.h"
 #include "forte/datatypes/forte_wstring.h"
@@ -26,19 +26,19 @@
 namespace forte::eclipse4diac::io::ethercat {
   class EsiFileParser;
 
-  class FORTE_ECSlave : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECSlaveHandler::Delegate {
-      DECLARE_GENERIC_FIRMWARE_FB(FORTE_ECSlave)
+  class FORTE_ECDevice : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECBusDeviceHandler::Delegate {
+      DECLARE_GENERIC_FIRMWARE_FB(FORTE_ECDevice)
 
     public:
-      FORTE_ECSlave(forte::StringId paInstanceNameId,
+      FORTE_ECDevice(forte::StringId paInstanceNameId,
                     CFBContainer &paContainer,
-                    ECSlaveHandler::SlaveType paSlaveType = ECSlaveHandler::SlaveType::ECSlave);
-      ~FORTE_ECSlave() override;
+                    ECBusDeviceHandler::DeviceType paDeviceType = ECBusDeviceHandler::DeviceType::ECDevice);
+      ~FORTE_ECDevice() override;
 
-      void onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus paOldStatus) override;
-      void onSlaveDestroy() override;
+      void onDeviceStatus(ECBusDeviceHandler::DeviceStatus paStatus, ECBusDeviceHandler::DeviceStatus paOldStatus) override;
+      void onDeviceDestroy() override;
 
-      CIEC_ECSlaveConfig &Config() {
+      CIEC_ECDeviceConfig &Config() {
         return var_Config;
       }
 
@@ -80,7 +80,7 @@ namespace forte::eclipse4diac::io::ethercat {
       forte::ISocketPin *getSocketPinUnchecked(size_t paIndex) override;
 
       CIEC_BOOL var_QI;
-      CIEC_ECSlaveConfig var_Config;
+      CIEC_ECDeviceConfig var_Config;
       CIEC_BOOL var_QO;
       CIEC_WSTRING var_STATUS;
 

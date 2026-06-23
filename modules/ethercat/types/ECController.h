@@ -23,8 +23,8 @@
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class FORTE_ECMaster final : public forte::io::IOConfigFBMultiMaster {
-      DECLARE_FIRMWARE_FB(FORTE_ECMaster)
+  class FORTE_ECController final : public forte::io::IOConfigFBMultiMaster {
+      DECLARE_FIRMWARE_FB(FORTE_ECController)
     
     private:
       static const TEventID scmEventINITID = 0;
@@ -47,14 +47,14 @@ namespace forte::eclipse4diac::io::ethercat {
       void executeEvent(TEventID paEIID, CEventChainExecutionThread *const paECET) override;
 
     public:
-      FORTE_ECMaster(forte::StringId paInstanceNameId, CFBContainer &paContainer);
-      ~FORTE_ECMaster() override;
+      FORTE_ECController(forte::StringId paInstanceNameId, CFBContainer &paContainer);
+      ~FORTE_ECController() override;
 
       EMGMResponse changeExecutionState(EMGMCommandType paCommand) override;
 
       CIEC_BOOL var_QI;
       CIEC_BOOL var_Enable;
-      CIEC_UINT var_MasterIndex;
+      CIEC_UINT var_ControllerIndex;
       CIEC_TIME var_UpdateInterval;
 
       CIEC_BOOL var_QO;
@@ -66,7 +66,7 @@ namespace forte::eclipse4diac::io::ethercat {
 
       CDataConnection *conn_QI;
       CDataConnection *conn_Enable;
-      CDataConnection *conn_MasterIndex;
+      CDataConnection *conn_ControllerIndex;
       CDataConnection *conn_UpdateInterval;
 
       COutDataConnection<CIEC_BOOL> conn_QO;
@@ -84,7 +84,7 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void evt_INIT(const CIEC_BOOL &paQI,
                     const CIEC_BOOL &paEnable,
-                    const CIEC_UINT &paMasterIndex,
+                    const CIEC_UINT &paControllerIndex,
                     const CIEC_TIME &paUpdateInterval,
                     CAnyBitOutputParameter<CIEC_BOOL> paQO,
                     COutputParameter<CIEC_WSTRING> paSTATUS) {
@@ -92,7 +92,7 @@ namespace forte::eclipse4diac::io::ethercat {
         COutputGuard guard_paSTATUS(paSTATUS);
         var_QI = paQI;
         var_Enable = paEnable;
-        var_MasterIndex = paMasterIndex;
+        var_ControllerIndex = paControllerIndex;
         var_UpdateInterval = paUpdateInterval;
         receiveInputEvent(scmEventINITID, nullptr);
         *paQO = var_QO;
@@ -101,11 +101,11 @@ namespace forte::eclipse4diac::io::ethercat {
 
       void operator()(const CIEC_BOOL &paQI,
                       const CIEC_BOOL &paEnable,
-                      const CIEC_UINT &paMasterIndex,
+                      const CIEC_UINT &paControllerIndex,
                       const CIEC_TIME &paUpdateInterval,
                       CAnyBitOutputParameter<CIEC_BOOL> paQO,
                       COutputParameter<CIEC_WSTRING> paSTATUS) {
-        evt_INIT(paQI, paEnable, paMasterIndex, paUpdateInterval, paQO, paSTATUS);
+        evt_INIT(paQI, paEnable, paControllerIndex, paUpdateInterval, paQO, paSTATUS);
       }
   };
 }

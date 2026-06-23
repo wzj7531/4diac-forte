@@ -13,11 +13,11 @@
 
 #pragma once
 
-#include "ECSlave.h"
+#include "ECDevice.h"
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class FORTE_ECCoupler : public FORTE_ECSlave {
+  class FORTE_ECCoupler : public FORTE_ECDevice {
       DECLARE_FIRMWARE_FB(FORTE_ECCoupler)
 
     public:

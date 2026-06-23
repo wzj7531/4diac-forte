@@ -15,7 +15,7 @@
 
 #include "ECBusAdapter.h"
 #include "../structs/ECModuleConfig.h"
-#include "../slave/slave.h"
+#include "../device/bus_device_handler.h"
 #include "forte/adapter.h"
 #include "forte/datatypes/forte_bool.h"
 #include "forte/datatypes/forte_wstring.h"
@@ -26,15 +26,15 @@
 namespace forte::eclipse4diac::io::ethercat {
   class EsiFileParser;
 
-  class FORTE_ECModule : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECSlaveHandler::Delegate {
+  class FORTE_ECModule : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECBusDeviceHandler::Delegate {
       DECLARE_GENERIC_FIRMWARE_FB(FORTE_ECModule)
 
     public:
       FORTE_ECModule(forte::StringId paInstanceNameId, CFBContainer &paContainer);
       ~FORTE_ECModule() override;
 
-      void onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus paOldStatus) override;
-      void onSlaveDestroy() override;
+      void onDeviceStatus(ECBusDeviceHandler::DeviceStatus paStatus, ECBusDeviceHandler::DeviceStatus paOldStatus) override;
+      void onDeviceDestroy() override;
 
       size_t numInMappings() const {
         return mNumInPdus;

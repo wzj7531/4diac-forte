@@ -175,7 +175,7 @@ namespace forte::eclipse4diac::io::ethercat {
     cachedRxPdoSize = rxPdoSize;
     cachedTxPdoSize = txPdoSize;
    
-    // Build RxPDO (OUTPUT direction - from master to slave)
+    // Build RxPDO (OUTPUT direction - from controller to device)
     if(rxPdoSize > 0){
         ec_pdo_info_t* rxPdoes = new ec_pdo_info_t[rxPdoSize];
         int pdoIdx = 0;  // Use separate index for PDO array
@@ -201,7 +201,7 @@ namespace forte::eclipse4diac::io::ethercat {
         syncInfos[0].pdos = rxPdoes;
     }
 
-    // Build TxPDO (INPUT direction - from slave to master)
+    // Build TxPDO (INPUT direction - from device to controller)
     if(txPdoSize > 0){
         ec_pdo_info_t* txPdoes = new ec_pdo_info_t[txPdoSize];
         int pdoIdx = 0;  // Use separate index for PDO array

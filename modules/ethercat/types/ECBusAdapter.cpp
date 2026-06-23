@@ -21,7 +21,7 @@ namespace forte::eclipse4diac::io::ethercat {
 
   namespace {
     const forte::StringId cDataInputNames[] = {"QO"_STRID};
-    const forte::StringId cDataOutputNames[] = {"QI"_STRID, "MasterId"_STRID, "Index"_STRID};
+    const forte::StringId cDataOutputNames[] = {"QI"_STRID, "ControllerId"_STRID, "Index"_STRID};
     const forte::StringId cEventInputNames[] = {"INITO"_STRID};
     const forte::StringId cEventInputTypeIds[] = {"EInit"_STRID};
     const forte::StringId cEventOutputNames[] = {"INIT"_STRID};
@@ -73,16 +73,16 @@ namespace forte::eclipse4diac::io::ethercat {
       FORTE_ECBusAdapter(paContainer, scmFBInterfaceSpecPlug, paInstanceNameId, paParentAdapterlistID),
       conn_INITO(*this, 0),
       conn_QI(nullptr),
-      conn_MasterId(nullptr),
-      conn_MasterIndex(nullptr),
+      conn_ControllerId(nullptr),
+      conn_ControllerIndex(nullptr),
       conn_QO(*this, 0, var_QO) {
   }
 
   void FORTE_ECBusAdapter_Plug::readInputData(TEventID paEIID) {
     if (paEIID == scmEventINITID) {
       readData(0, var_QI, conn_QI);
-      readData(1, var_MasterId, conn_MasterId);
-      readData(2, var_Index, conn_MasterIndex);
+      readData(1, var_MasterId, conn_ControllerId);
+      readData(2, var_Index, conn_ControllerIndex);
       if (getPeer() != nullptr) {
         getSocket()->var_QI = var_QI;
         getSocket()->var_MasterId = var_MasterId;
@@ -113,8 +113,8 @@ namespace forte::eclipse4diac::io::ethercat {
   CDataConnection **FORTE_ECBusAdapter_Plug::getDIConUnchecked(TPortId paDINum) {
     switch (paDINum) {
       case 0: return &conn_QI; break;
-      case 1: return &conn_MasterId; break;
-      case 2: return &conn_MasterIndex; break;
+      case 1: return &conn_ControllerId; break;
+      case 2: return &conn_ControllerIndex; break;
     }
     return nullptr;
   }
@@ -138,8 +138,8 @@ namespace forte::eclipse4diac::io::ethercat {
       conn_QO(nullptr),
       conn_INIT(*this, 0),
       conn_QI(*this, 0, var_QI),
-      conn_MasterId(*this, 1, var_MasterId),
-      conn_MasterIndex(*this, 2, var_Index) {
+      conn_ControllerId(*this, 1, var_MasterId),
+      conn_ControllerIndex(*this, 2, var_Index) {
   }
 
   void FORTE_ECBusAdapter_Socket::readInputData(TEventID paEIID) {
@@ -154,8 +154,8 @@ namespace forte::eclipse4diac::io::ethercat {
   void FORTE_ECBusAdapter_Socket::writeOutputData(TEventID paEIID) {
     if (paEIID == scmEventINITID) {
       writeData(scmFBInterfaceSpecSocket.getNumDIs() + 0, var_QI, conn_QI);
-      writeData(scmFBInterfaceSpecSocket.getNumDIs() + 1, var_MasterId, conn_MasterId);
-      writeData(scmFBInterfaceSpecSocket.getNumDIs() + 2, var_Index, conn_MasterIndex);
+      writeData(scmFBInterfaceSpecSocket.getNumDIs() + 1, var_MasterId, conn_ControllerId);
+      writeData(scmFBInterfaceSpecSocket.getNumDIs() + 2, var_Index, conn_ControllerIndex);
     }
   }
 
@@ -174,8 +174,8 @@ namespace forte::eclipse4diac::io::ethercat {
   CDataConnection *FORTE_ECBusAdapter_Socket::getDOConUnchecked(TPortId paDONum) {
     switch (paDONum) {
       case 0: return &conn_QI; break;
-      case 1: return &conn_MasterId; break;
-      case 2: return &conn_MasterIndex; break;
+      case 1: return &conn_ControllerId; break;
+      case 2: return &conn_ControllerIndex; break;
     }
     return nullptr;
   }

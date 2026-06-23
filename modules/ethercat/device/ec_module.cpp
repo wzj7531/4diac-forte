@@ -11,22 +11,15 @@
  *   Sichuan Qunyuan Technology Co., Ltd. - initial API and implementation
  *******************************************************************************/
 
-#include "ec_device.h"
+#include "ec_module.h"
 
 namespace forte::eclipse4diac::io::ethercat {
-
-  ECDeviceHandler::ECDeviceHandler(ECBusHandler *paBus, 
-                                   ECSlaveHandler::SlaveType paSlaveType, 
-                                   size_t paSlaveIndex) : 
-      ECSlaveHandler(paBus, paSlaveType, paSlaveIndex) {
+  ECModuleHandler::ECModuleHandler(ECBusHandler *paBus, 
+                                   size_t paDeviceIndex) : 
+      ECBusDeviceHandler(paBus, DeviceType::ECModule, paDeviceIndex) {
   }
 
-  void ECDeviceHandler::setConfig(struct ECSlaveHandler::Config *paConfig) {
+  void ECModuleHandler::setConfig(struct ECBusDeviceHandler::Config *paConfig) {
     mConfig = *static_cast<Config *>(paConfig);
-
-    mECDeviceModel.mAlias = mConfig.mAlias;
-    mECDeviceModel.mPosition = mConfig.mPosition;
-    mECDeviceModel.mVendorId = mConfig.mVendorId;
-    mECDeviceModel.mProductCode = mConfig.mProductCode;
   }
 }

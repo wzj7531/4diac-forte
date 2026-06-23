@@ -14,7 +14,7 @@
 #include "ECModule.h"
 
 #include "../handler/bus.h"
-#include "../slave/ec_device.h"
+#include "../device/ec_device.h"
 #include "../utils/EsiFileParser.h"
 #include "forte/iec61131_functions/func_AND.h"
 #include "forte/util/string_utils.h"
@@ -42,7 +42,7 @@ namespace forte::eclipse4diac::io::ethercat {
                                            paInstanceNameId,
                                            scmSlaveConfigurationIO,
                                            scmSlaveConfigurationIONum,
-                                           static_cast<int>(ECSlaveHandler::SlaveType::ECModule)),
+                                           static_cast<int>(ECBusDeviceHandler::DeviceType::ECModule)),
       conn_MAPO(*this, 0),
       conn_IND(*this, 1),
       conn_QI(nullptr),
@@ -202,7 +202,7 @@ namespace forte::eclipse4diac::io::ethercat {
     cfg.mSlot = static_cast<TForteUInt16>(Config().Slot);
     handler->setConfig(&cfg);
     handler->mDelegate = this;
-    bus.addSlave(handler);
+    bus.addDevice(handler);
     return true;
   }
 
@@ -218,19 +218,19 @@ namespace forte::eclipse4diac::io::ethercat {
 
   void FORTE_ECModule::deInit() {
     auto &bus = *static_cast<ECBusHandler *>(&getController());
-    ECSlaveHandler *slave = bus.getSlave(mIndex);
-    if (slave != nullptr && slave->mDelegate == this) {
-      slave->mDelegate = nullptr;
+    ECBusDeviceHandler *device = bus.getDevice(mIndex);
+    if (device != nullptr && device->mDelegate == this) {
+      device->mDelegate = nullptr;
     }
   }
 
   void FORTE_ECModule::initHandles() {
     auto &bus = *static_cast<ECBusHandler *>(&getController());
-    auto *module = static_cast<ECModuleHandler *>(bus.getSlave(mIndex));
+    auto *module = static_cast<ECModuleHandler *>(bus.getDevice(mIndex));
     if (nullptr == module) {
       return;
     }
-    ECSlaveHandler *parent = bus.getSlave(mIndex / 100 - 1);
+    ECBusDeviceHandler *parent = bus.getDevice(mIndex / 100 - 1);
     auto *device = static_cast<ECDeviceHandler *>(parent);
     if (nullptr == device) {
       return;
@@ -242,20 +242,20 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void FORTE_ECModule::onSlaveStatus(ECSlaveHandler::SlaveStatus paStatus, ECSlaveHandler::SlaveStatus) {
+  void FORTE_ECModule::onDeviceStatus(ECBusDeviceHandler::DeviceStatus paStatus, ECBusDeviceHandler::DeviceStatus) {
     switch (paStatus) {
-      case ECSlaveHandler::OK: STATUS() = scmOK; break;
-      case ECSlaveHandler::Error: STATUS() = u"Error"_WSTRING; break;
-      case ECSlaveHandler::NotInitialized: STATUS() = u"NotInitialized"_WSTRING; break;
+      case ECBusDeviceHandler::OK: STATUS() = scmOK; break;
+      case ECBusDeviceHandler::Error: STATUS() = u"Error"_WSTRING; break;
+      case ECBusDeviceHandler::NotInitialized: STATUS() = u"NotInitialized"_WSTRING; break;
       default: STATUS() = u"Unknown"_WSTRING; break;
     }
     sendOutputEvent(scmEventINDID, getEventChainExecutor());
   }
 
-  void FORTE_ECModule::onSlaveDestroy() {
+  void FORTE_ECModule::onDeviceDestroy() {
     deInit();
     QO() = false_BOOL;
-    STATUS() = u"Slave destroyed"_WSTRING;
+    STATUS() = u"Device destroyed"_WSTRING;
   }
 
 } // namespace forte::eclipse4diac::io::ethercat

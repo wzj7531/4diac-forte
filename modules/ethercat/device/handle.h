@@ -20,19 +20,19 @@
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class ECSlaveHandler;
+  class ECBusDeviceHandler;
 
-  class ECSlaveHandle : public forte::io::IOHandle {
+  class ECDeviceHandle : public forte::io::IOHandle {
     public:
-			friend class ECSlaveHandler;
+			friend class ECBusDeviceHandler;
 			
-      ECSlaveHandle(forte::io::IODeviceController *paController,
+      ECDeviceHandle(forte::io::IODeviceController *paController,
                     forte::io::IOMapper::Direction paDirection,
                     CIEC_ANY::EDataTypeID type,
                     uint8_t paOffset,
                     const std::string &paHandleId,
-                    ECSlaveHandler *paSlave);
-      ~ECSlaveHandle() override;
+                    ECBusDeviceHandler *paDevice);
+      ~ECDeviceHandle() override;
 
       const std::string &handleId() const {
         return mHandleId;
@@ -89,7 +89,7 @@ namespace forte::eclipse4diac::io::ethercat {
       const uint8_t mOffset;
 
       unsigned int mECDomainDataOffset;
-      ECSlaveHandler *mSlave;
+      ECBusDeviceHandler *mDevice;
 			arch::CSyncObject *mUpdateMutex;
 
 			size_t mByteLength;

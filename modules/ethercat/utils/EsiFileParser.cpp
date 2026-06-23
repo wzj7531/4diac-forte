@@ -15,7 +15,7 @@
 
 #include "../handler/bus.h"
 #include "../types/ECModule.h"
-#include "../types/ECSlave.h"
+#include "../types/ECDevice.h"
 #include "forte/util/string_utils.h"
 
 #include <filesystem>
@@ -246,7 +246,7 @@ namespace forte::eclipse4diac::io::ethercat {
   }
 
   void EsiFileParser::getPdoSizeInfo(TiXmlElement *paElement,
-                                     FORTE_ECSlave &paSlave,
+                                     FORTE_ECDevice &paDevice,
                                      uint16_t &paRcvBufferSize,
                                      uint16_t &paSendBufferSize) {
     int inputIndex = 0;
@@ -255,7 +255,7 @@ namespace forte::eclipse4diac::io::ethercat {
         continue;
       }
       for (auto *entry = tx->FirstChildElement("Entry"); entry; entry = entry->NextSiblingElement("Entry")) {
-        const auto *idVar = static_cast<const CIEC_WSTRING *>(paSlave.getDI(2 + inputIndex++));
+        const auto *idVar = static_cast<const CIEC_WSTRING *>(paDevice.getDI(2 + inputIndex++));
         if (!idVar->getValue() || idVar->getValue()[0] == '\0') {
           continue;
         }
@@ -264,13 +264,13 @@ namespace forte::eclipse4diac::io::ethercat {
       }
     }
 
-    inputIndex = static_cast<int>(paSlave.numInMappings());
+    inputIndex = static_cast<int>(paDevice.numInMappings());
     for (auto *rx = paElement->FirstChildElement("RxPdo"); rx; rx = rx->NextSiblingElement("RxPdo")) {
       if (!rx->Attribute("Sm")) {
         continue;
       }
       for (auto *entry = rx->FirstChildElement("Entry"); entry; entry = entry->NextSiblingElement("Entry")) {
-        const auto *idVar = static_cast<const CIEC_WSTRING *>(paSlave.getDI(2 + inputIndex++));
+        const auto *idVar = static_cast<const CIEC_WSTRING *>(paDevice.getDI(2 + inputIndex++));
         if (!idVar->getValue() || idVar->getValue()[0] == '\0') {
           continue;
         }
@@ -283,7 +283,7 @@ namespace forte::eclipse4diac::io::ethercat {
   }
 
   void EsiFileParser::getPdoSizeInfo(TiXmlElement *paElement,
-                                     FORTE_ECModule &paSlave,
+                                     FORTE_ECModule &paDevice,
                                      uint16_t &paRcvBufferSize,
                                      uint16_t &paSendBufferSize) {
     int inputIndex = 0;
@@ -292,7 +292,7 @@ namespace forte::eclipse4diac::io::ethercat {
         continue;
       }
       for (auto *entry = tx->FirstChildElement("Entry"); entry; entry = entry->NextSiblingElement("Entry")) {
-        const auto *idVar = static_cast<const CIEC_WSTRING *>(paSlave.getDI(2 + inputIndex++));
+        const auto *idVar = static_cast<const CIEC_WSTRING *>(paDevice.getDI(2 + inputIndex++));
         if (!idVar->getValue() || idVar->getValue()[0] == '\0') {
           continue;
         }
@@ -301,13 +301,13 @@ namespace forte::eclipse4diac::io::ethercat {
       }
     }
 
-    inputIndex = static_cast<int>(paSlave.numInMappings());
+    inputIndex = static_cast<int>(paDevice.numInMappings());
     for (auto *rx = paElement->FirstChildElement("RxPdo"); rx; rx = rx->NextSiblingElement("RxPdo")) {
       if (!rx->Attribute("Sm")) {
         continue;
       }
       for (auto *entry = rx->FirstChildElement("Entry"); entry; entry = entry->NextSiblingElement("Entry")) {
-        const auto *idVar = static_cast<const CIEC_WSTRING *>(paSlave.getDI(2 + inputIndex++));
+        const auto *idVar = static_cast<const CIEC_WSTRING *>(paDevice.getDI(2 + inputIndex++));
         if (!idVar->getValue() || idVar->getValue()[0] == '\0') {
           continue;
         }
@@ -322,10 +322,10 @@ namespace forte::eclipse4diac::io::ethercat {
   void EsiFileParser::parseDevicePdo(const std::string &paPdoType,
                                      TiXmlElement *paElement,
                                      ECDeviceHandler *paDeviceHandler,
-                                     FORTE_ECSlave &paSlave,
+                                     FORTE_ECDevice &paDevice,
                                      bool paRemapOnly) {
     const SyncDir dir = (paPdoType == "RxPdo") ? SyncDir::Out : SyncDir::In;
-    int diIndex = (dir == SyncDir::In) ? 2 : 2 + static_cast<int>(paSlave.numInMappings());
+    int diIndex = (dir == SyncDir::In) ? 2 : 2 + static_cast<int>(paDevice.numInMappings());
     int handleIndex = 0;
     int entryIndexInInterface = 0;
     int offset = 0;
@@ -350,7 +350,7 @@ namespace forte::eclipse4diac::io::ethercat {
           paDeviceHandler->mECDeviceModel.addPdoEntry(pdoIndex, entryIndex, subIndex, bitLen);
         }
 
-        auto *idVar = static_cast<CIEC_WSTRING *>(paSlave.getDI(diIndex + entryIndexInInterface++));
+        auto *idVar = static_cast<CIEC_WSTRING *>(paDevice.getDI(diIndex + entryIndexInInterface++));
         const char *idText = idVar->getValue();
         if (nullptr == idText || idText[0] == '\0') {
           continue;
@@ -363,10 +363,10 @@ namespace forte::eclipse4diac::io::ethercat {
                                             paDeviceHandler->index(),
                                             static_cast<uint8_t>(offset),
                                             static_cast<uint8_t>(bitLen / 8));
-        paSlave.initHandle(desc);
+        paDevice.initHandle(desc);
         offset += bitLen / 8;
 
-        ECSlaveHandle *handle = (dir == SyncDir::In) ? paDeviceHandler->getInputHandle(handleIndex)
+        ECDeviceHandle *handle = (dir == SyncDir::In) ? paDeviceHandler->getInputHandle(handleIndex)
                                                       : paDeviceHandler->getOutputHandle(handleIndex);
         if (handle) {
           if (paRemapOnly) {
@@ -384,7 +384,7 @@ namespace forte::eclipse4diac::io::ethercat {
                                      TiXmlElement *paElement,
                                      ECDeviceHandler *paDeviceHandler,
                                      ECModuleHandler *paModuleHandler,
-                                     FORTE_ECModule &paSlave,
+                                     FORTE_ECModule &paDevice,
                                      bool paRemapOnly) {
     std::string vendorName;
     if (auto vit = scmVendorMap.find(paModuleHandler->moduleIdent()); vit != scmVendorMap.end()) {
@@ -392,7 +392,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
 
     const SyncDir dir = (paPdoType == "RxPdo") ? SyncDir::Out : SyncDir::In;
-    int diIndex = (dir == SyncDir::In) ? 2 : 2 + static_cast<int>(paSlave.numInMappings());
+    int diIndex = (dir == SyncDir::In) ? 2 : 2 + static_cast<int>(paDevice.numInMappings());
     int handleIndex = 0;
     int entryIndexInInterface = 0;
     int offset = 0;
@@ -420,7 +420,7 @@ namespace forte::eclipse4diac::io::ethercat {
           paDeviceHandler->mECDeviceModel.addPdoEntry(pdoIndex, entryIndex, subIndex, bitLen);
         }
 
-        auto *idVar = static_cast<CIEC_WSTRING *>(paSlave.getDI(diIndex + entryIndexInInterface++));
+        auto *idVar = static_cast<CIEC_WSTRING *>(paDevice.getDI(diIndex + entryIndexInInterface++));
         const char *idText = idVar->getValue();
         if (nullptr == idText || idText[0] == '\0') {
           continue;
@@ -433,10 +433,10 @@ namespace forte::eclipse4diac::io::ethercat {
                                             paModuleHandler->index(),
                                             static_cast<uint8_t>(offset),
                                             static_cast<uint8_t>(bitLen / 8));
-        paSlave.initHandle(desc);
+        paDevice.initHandle(desc);
         offset += bitLen / 8;
 
-        ECSlaveHandle *handle = (dir == SyncDir::In) ? paModuleHandler->getInputHandle(handleIndex)
+        ECDeviceHandle *handle = (dir == SyncDir::In) ? paModuleHandler->getInputHandle(handleIndex)
                                                       : paModuleHandler->getOutputHandle(handleIndex);
         if (handle) {
           if (paRemapOnly) {
@@ -450,13 +450,13 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void EsiFileParser::initDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECSlave &paSlave) {
+  void EsiFileParser::initDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECDevice &paDevice) {
     auto it = scmDeviceOrModuleMap.find(paProductCode);
     if (it == scmDeviceOrModuleMap.end()) {
       return;
     }
     TiXmlElement *deviceElement = it->second;
-    if (paDeviceHandler->mSlaveType == ECSlaveHandler::SlaveType::ECCoupler) {
+    if (paDeviceHandler->mDeviceType == ECBusDeviceHandler::DeviceType::ECCoupler) {
       if (auto *slots = deviceElement->FirstChildElement("Slots")) {
         paDeviceHandler->mECDeviceModel.mSlotIndexInc =
             static_cast<uint32_t>(util::strtoul(slots->Attribute("SlotIndexIncrement"), nullptr, 10));
@@ -480,16 +480,16 @@ namespace forte::eclipse4diac::io::ethercat {
 
     uint16_t recvSize = 0;
     uint16_t sendSize = 0;
-    getPdoSizeInfo(deviceElement, paSlave, recvSize, sendSize);
+    getPdoSizeInfo(deviceElement, paDevice, recvSize, sendSize);
     paDeviceHandler->initBuffer(sendSize, recvSize);
-    parseDevicePdo("TxPdo", deviceElement, paDeviceHandler, paSlave);
-    parseDevicePdo("RxPdo", deviceElement, paDeviceHandler, paSlave);
+    parseDevicePdo("TxPdo", deviceElement, paDeviceHandler, paDevice);
+    parseDevicePdo("RxPdo", deviceElement, paDeviceHandler, paDevice);
   }
 
   void EsiFileParser::initModuleIOHandles(uint32_t paModuleIdent,
                                           ECDeviceHandler *paDeviceHandler,
                                           ECModuleHandler *paModuleHandler,
-                                          FORTE_ECModule &paSlave) {
+                                          FORTE_ECModule &paDevice) {
     auto it = scmDeviceOrModuleMap.find(paModuleIdent);
     if (it == scmDeviceOrModuleMap.end()) {
       return;
@@ -497,33 +497,33 @@ namespace forte::eclipse4diac::io::ethercat {
     TiXmlElement *moduleElement = it->second;
     uint16_t recvSize = 0;
     uint16_t sendSize = 0;
-    getPdoSizeInfo(moduleElement, paSlave, recvSize, sendSize);
+    getPdoSizeInfo(moduleElement, paDevice, recvSize, sendSize);
     paModuleHandler->initBuffer(sendSize, recvSize);
-    parseModulePdo("TxPdo", moduleElement, paDeviceHandler, paModuleHandler, paSlave);
-    parseModulePdo("RxPdo", moduleElement, paDeviceHandler, paModuleHandler, paSlave);
+    parseModulePdo("TxPdo", moduleElement, paDeviceHandler, paModuleHandler, paDevice);
+    parseModulePdo("RxPdo", moduleElement, paDeviceHandler, paModuleHandler, paDevice);
   }
 
-  void EsiFileParser::remapDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECSlave &paSlave) {
+  void EsiFileParser::remapDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECDevice &paDevice) {
     auto it = scmDeviceOrModuleMap.find(paProductCode);
     if (it == scmDeviceOrModuleMap.end()) {
       return;
     }
     TiXmlElement *deviceElement = it->second;
-    parseDevicePdo("TxPdo", deviceElement, paDeviceHandler, paSlave, true);
-    parseDevicePdo("RxPdo", deviceElement, paDeviceHandler, paSlave, true);
+    parseDevicePdo("TxPdo", deviceElement, paDeviceHandler, paDevice, true);
+    parseDevicePdo("RxPdo", deviceElement, paDeviceHandler, paDevice, true);
   }
 
   void EsiFileParser::remapModuleIOHandles(uint32_t paModuleIdent,
                                            ECDeviceHandler *paDeviceHandler,
                                            ECModuleHandler *paModuleHandler,
-                                           FORTE_ECModule &paSlave) {
+                                           FORTE_ECModule &paDevice) {
     auto it = scmDeviceOrModuleMap.find(paModuleIdent);
     if (it == scmDeviceOrModuleMap.end()) {
       return;
     }
     TiXmlElement *moduleElement = it->second;
-    parseModulePdo("TxPdo", moduleElement, paDeviceHandler, paModuleHandler, paSlave, true);
-    parseModulePdo("RxPdo", moduleElement, paDeviceHandler, paModuleHandler, paSlave, true);
+    parseModulePdo("TxPdo", moduleElement, paDeviceHandler, paModuleHandler, paDevice, true);
+    parseModulePdo("RxPdo", moduleElement, paDeviceHandler, paModuleHandler, paDevice, true);
   }
 } // namespace forte::eclipse4diac::io::ethercat
 

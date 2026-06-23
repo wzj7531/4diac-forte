@@ -28,36 +28,36 @@ endif ()
 add_library(forte-ethercat         
             handler/bus.h
             handler/bus.cpp
-            slave/slave.h
-            slave/slave.cpp
-            slave/handle.h
-            slave/handle.cpp
-            slave/ec_device.h
-            slave/ec_device.cpp
-            slave/ec_module.h
-            slave/ec_module.cpp
-            slave/model/ec_model.h
-            slave/model/ec_model.cpp
+            device/bus_device_handler.h
+            device/bus_device_handler.cpp
+            device/handle.h
+            device/handle.cpp
+            device/ec_device.h
+            device/ec_device.cpp
+            device/ec_module.h
+            device/ec_module.cpp
+            device/model/ec_model.h
+            device/model/ec_model.cpp
             utils/EsiFileParser.h
             utils/EsiFileParser.cpp
             types/ECBusAdapter.h
             types/ECBusAdapter.cpp
-            types/ECSlave.h
-            types/ECSlave.cpp
+            types/ECDevice.h
+            types/ECDevice.cpp
             types/ECModule.h
             types/ECModule.cpp
             types/ECCoupler.h
             types/ECCoupler.cpp
             types/GEN_ECCoupler_fbt.h
             types/GEN_ECCoupler_fbt.cpp
-            types/GEN_ECSlave_fbt.h
-            types/GEN_ECSlave_fbt.cpp
+            types/GEN_ECDevice_fbt.h
+            types/GEN_ECDevice_fbt.cpp
             types/GEN_ECModule_fbt.h
             types/GEN_ECModule_fbt.cpp
-            types/ECMaster.h
-            types/ECMaster.cpp
-            structs/ECSlaveConfig.h
-            structs/ECSlaveConfig.cpp
+            types/ECController.h
+            types/ECController.cpp
+            structs/ECDeviceConfig.h
+            structs/ECDeviceConfig.cpp
             structs/ECModuleConfig.h
             structs/ECModuleConfig.cpp
 )

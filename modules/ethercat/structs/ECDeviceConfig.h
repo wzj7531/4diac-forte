@@ -19,8 +19,8 @@
 #include "forte/typelib.h"
 
 namespace forte::eclipse4diac::io::ethercat {
-  class CIEC_ECSlaveConfig : public CIEC_STRUCT {
-      DECLARE_FIRMWARE_DATATYPE(ECSlaveConfig);
+  class CIEC_ECDeviceConfig : public CIEC_STRUCT {
+      DECLARE_FIRMWARE_DATATYPE(ECDeviceConfig);
 
     public:
       CIEC_UINT Alias;
@@ -28,7 +28,7 @@ namespace forte::eclipse4diac::io::ethercat {
       CIEC_UDINT VendorId;
       CIEC_UDINT ProductCode;
 
-      CIEC_ECSlaveConfig() = default;
+      CIEC_ECDeviceConfig() = default;
 
       size_t getStructSize() const override {
         return 4;

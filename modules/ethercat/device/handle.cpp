@@ -12,7 +12,7 @@
  *******************************************************************************/
 
 #include "handle.h"
-#include "slave.h"
+#include "bus_device_handler.h"
 #include "forte/datatypes/forte_byte.h"
 #include "forte/datatypes/forte_word.h"
 #include "forte/datatypes/forte_dword.h"
@@ -20,22 +20,22 @@
 #include "forte/io/mapper/io_mapper.h"
 
 namespace forte::eclipse4diac::io::ethercat {
-  ECSlaveHandle::ECSlaveHandle(forte::io::IODeviceController *paController,
+  ECDeviceHandle::ECDeviceHandle(forte::io::IODeviceController *paController,
                                 forte::io::IOMapper::Direction paDirection,
                                 CIEC_ANY::EDataTypeID paType,
                                 uint8_t paOffset,
                                 const std::string &paHandleId,
-                                ECSlaveHandler *paSlave) :
+                                ECBusDeviceHandler *paDevice) :
       IOHandle(paController, paDirection, paType),
       mOffset(paOffset),
-      mSlave(paSlave),
+      mDevice(paDevice),
       mECDomainDataOffset(0),
-      mUpdateMutex(&mSlave->mUpdateMutex),
+      mUpdateMutex(&mDevice->mUpdateMutex),
       mHandleId(paHandleId) {
     if(paDirection == forte::io::IOMapper::In){
-      mBuffer = mSlave->mUpdateRecvImage;
+      mBuffer = mDevice->mUpdateRecvImage;
     } else if(paDirection == forte::io::IOMapper::Out) {
-      mBuffer = mSlave->mUpdateSendImage;
+      mBuffer = mDevice->mUpdateSendImage;
     }
 
     switch (paType) {
@@ -57,9 +57,9 @@ namespace forte::eclipse4diac::io::ethercat {
 
   }
 
-  ECSlaveHandle::~ECSlaveHandle() = default;
+  ECDeviceHandle::~ECDeviceHandle() = default;
 
-  void ECSlaveHandle::syncDomainData(uint8_t *paECDomainData) {
+  void ECDeviceHandle::syncDomainData(uint8_t *paECDomainData) {
     uint8_t *ecDomainData = paECDomainData + mECDomainDataOffset;
     if(isInput()) {
       memcpy(mBuffer + mOffset, ecDomainData, mByteLength);
@@ -68,7 +68,7 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
-  void ECSlaveHandle::set(const CIEC_ANY &paValue) {
+  void ECDeviceHandle::set(const CIEC_ANY &paValue) {
     switch (mType) {
       case CIEC_ANY::EDataTypeID::e_BYTE: {
         uint8_t value = static_cast<const CIEC_BYTE &>(paValue);
@@ -94,12 +94,12 @@ namespace forte::eclipse4diac::io::ethercat {
       }
       break;
       default:
-        DEVLOG_ERROR("ethercat[ECSlaveHandle]:Unsupported data type for set.\n");
+        DEVLOG_ERROR("ethercat[ECDeviceHandle]:Unsupported data type for set.\n");
       break;
     }
   }
 
-  void ECSlaveHandle::get(CIEC_ANY &paValue) {
+  void ECDeviceHandle::get(CIEC_ANY &paValue) {
     switch (mType){
       case CIEC_ANY::EDataTypeID::e_BYTE:
         static_cast<CIEC_BYTE &>(paValue) = getByteValue(mBuffer);
@@ -114,12 +114,12 @@ namespace forte::eclipse4diac::io::ethercat {
         static_cast<CIEC_LWORD &>(paValue) = getLWordValue(mBuffer);
         break;
       default:
-        DEVLOG_ERROR("ethercat[ECSlaveHandle]:Unsupported data type for get.\n");
+        DEVLOG_ERROR("ethercat[ECDeviceHandle]:Unsupported data type for get.\n");
         break;
     }
   }
 
-  bool ECSlaveHandle::equal(unsigned char *paOldBuffer) {
+  bool ECDeviceHandle::equal(unsigned char *paOldBuffer) {
     bool result = false;
 
     switch (mType){
@@ -137,45 +137,45 @@ namespace forte::eclipse4diac::io::ethercat {
         break;
       default:
         result = false;
-        DEVLOG_ERROR("ethercat(ECSlaveHandle):Unsupported type for equal.\n");
+        DEVLOG_ERROR("ethercat(ECDeviceHandle):Unsupported type for equal.\n");
         break;
     }
 
     return result;
   }
 
-  const CIEC_BYTE ECSlaveHandle::getByteValue(const unsigned char* paBuffer){
+  const CIEC_BYTE ECDeviceHandle::getByteValue(const unsigned char* paBuffer){
     uint8_t *p = (uint8_t*)(paBuffer + mOffset);
     return CIEC_BYTE(*p);
   }
 
-  const CIEC_WORD ECSlaveHandle::getWordValue(const unsigned char* paBuffer){
+  const CIEC_WORD ECDeviceHandle::getWordValue(const unsigned char* paBuffer){
     uint16_t value;
     memcpy(&value, paBuffer + mOffset, sizeof(uint16_t));
     uint16_t hostValue = littleEndianToHost(value);   
     return CIEC_WORD(hostValue);
   }
 
-  const CIEC_DWORD ECSlaveHandle::getDWordValue(const unsigned char* paBuffer){
+  const CIEC_DWORD ECDeviceHandle::getDWordValue(const unsigned char* paBuffer){
     uint32_t value;
     memcpy(&value, paBuffer + mOffset, sizeof(uint32_t));
     uint32_t hostValue = littleEndianToHost(value);  
     return CIEC_DWORD(hostValue);
   }
 
-  const CIEC_LWORD ECSlaveHandle::getLWordValue(const unsigned char* paBuffer){
+  const CIEC_LWORD ECDeviceHandle::getLWordValue(const unsigned char* paBuffer){
     uint64_t value;
     memcpy(&value, paBuffer + mOffset, sizeof(uint64_t));
     uint64_t hostValue = littleEndianToHost(value);
     return CIEC_LWORD(hostValue);
   }
 
-  void ECSlaveHandle::onObserver(forte::io::IOObserver *paObserver) {
+  void ECDeviceHandle::onObserver(forte::io::IOObserver *paObserver) {
     reset();
     IOHandle::onObserver(paObserver);
   }
 
-  void ECSlaveHandle::dropObserver() {
+  void ECDeviceHandle::dropObserver() {
     IOHandle::dropObserver();
     reset();
   }

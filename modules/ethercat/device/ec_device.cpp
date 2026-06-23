@@ -11,34 +11,22 @@
  *   Sichuan Qunyuan Technology Co., Ltd. - initial API and implementation
  *******************************************************************************/
 
-#include "slave.h"
 #include "ec_device.h"
-#include <cstdint>
 
 namespace forte::eclipse4diac::io::ethercat {
 
-  class ECModuleHandler : public ECSlaveHandler {
-    
-    public:
-      struct Config : ECSlaveHandler::Config {
-        uint32_t mModuleIdent;
-        uint16_t mSlot;
-      };
+  ECDeviceHandler::ECDeviceHandler(ECBusHandler *paBus, 
+                                   ECBusDeviceHandler::DeviceType paDeviceType, 
+                                   size_t paDeviceIndex) : 
+      ECBusDeviceHandler(paBus, paDeviceType, paDeviceIndex) {
+  }
 
-      void setConfig(struct ECSlaveHandler::Config *paConfig) override;
+  void ECDeviceHandler::setConfig(struct ECBusDeviceHandler::Config *paConfig) {
+    mConfig = *static_cast<Config *>(paConfig);
 
-      ECModuleHandler(ECBusHandler *paBus, size_t paSlaveIndex);
-
-      uint32_t moduleIdent() const {
-        return mConfig.mModuleIdent;
-      }
-
-      uint16_t slot() const {
-        return mConfig.mSlot;
-      }
-
-    protected:
-      ECModuleHandler *mDeviceHandler;
-      struct Config mConfig;
-  };
+    mECDeviceModel.mAlias = mConfig.mAlias;
+    mECDeviceModel.mPosition = mConfig.mPosition;
+    mECDeviceModel.mVendorId = mConfig.mVendorId;
+    mECDeviceModel.mProductCode = mConfig.mProductCode;
+  }
 }
