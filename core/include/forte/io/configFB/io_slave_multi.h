@@ -9,6 +9,7 @@
  * Contributors:
  *   Johannes Messmer - initial API and implementation and/or initial documentation
  *   Jose Cabral - Cleaning of namespaces
+ *   Sichuan Qunyuan Technology Co., Ltd. - add createSlaveHandler() hook and generic FB constructor
  *******************************************************************************/
 
 #ifndef SRC_CORE_IO_CONFIGFB_SLAVE_MULTI_H_
@@ -29,6 +30,14 @@ namespace forte::io {
                            CFBContainer &paContainer,
                            const SFBInterfaceSpec &paInterfaceSpec,
                            const StringId paInstanceNameId);
+
+      IOConfigFBMultiSlave(CFBContainer &paContainer,
+                           const SFBInterfaceSpec &paInterfaceSpec,
+                           forte::StringId paInstanceNameId,
+                           const TForteUInt8 *const paSlaveConfigurationIO,
+                           TForteUInt8 paSlaveConfigurationIONum,
+                           int paType);
+
       ~IOConfigFBMultiSlave() override;
 
     protected:
@@ -73,6 +82,10 @@ namespace forte::io {
 
       virtual void initHandles() = 0;
 
+      virtual bool createSlaveHandler() {
+        return true;
+      }
+
       void initHandle(IODeviceController::HandleDescriptor &paHandleDescriptor);
 
       static const CIEC_WSTRING scmOK;
@@ -97,6 +110,7 @@ namespace forte::io {
       static const CIEC_WSTRING scmStopped;
       static const char *const scmNotFound;
       static const char *const scmIncorrectType;
+      static const char *const scmCreateSlaveHandlerFailed;
   };
 
 } // namespace forte::io

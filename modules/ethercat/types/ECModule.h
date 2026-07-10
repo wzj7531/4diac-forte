@@ -19,14 +19,14 @@
 #include "forte/adapter.h"
 #include "forte/datatypes/forte_bool.h"
 #include "forte/datatypes/forte_wstring.h"
-#include "forte/io/configFB/io_slave_multi_handler.h"
+#include "forte/io/configFB/io_slave_multi.h"
+#include "forte/io/device/io_controller.h"
 #include "forte/genfb.h"
 #include <string>
 
 namespace forte::eclipse4diac::io::ethercat {
-  class EsiFileParser;
 
-  class FORTE_ECModule : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECBusDeviceHandler::Delegate {
+  class FORTE_ECModule : public CGenFunctionBlock<forte::io::IOConfigFBMultiSlave>, public ECBusDeviceHandler::Delegate {
       DECLARE_GENERIC_FIRMWARE_FB(FORTE_ECModule)
 
     public:
@@ -43,6 +43,9 @@ namespace forte::eclipse4diac::io::ethercat {
       CIEC_ECModuleConfig &Config() {
         return var_Config;
       }
+
+      CIEC_ANY *mappingDi(TPortId paRelativeIndex);
+      void registerMappedHandle(forte::io::IODeviceController::HandleDescriptor &paDesc);
 
     protected:
       bool createSlaveHandler() override;
@@ -100,9 +103,6 @@ namespace forte::eclipse4diac::io::ethercat {
       forte::CPlugPin<FORTE_ECBusAdapter_Plug> var_ModuleAdapterOut;
 
       std::unique_ptr<CIEC_ANY *[]> mGenDIs;
-
-    private:
-      friend class EsiFileParser;
 
       std::vector<StringId> mDiNames;
       std::vector<StringId> mDoNames;

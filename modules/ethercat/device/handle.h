@@ -39,7 +39,7 @@ namespace forte::eclipse4diac::io::ethercat {
         return mHandleId;
       }
 
-      /** Domain byte offset for EtherCAT registration (EsiFileParser / ECDeviceModel). */
+      /** Domain byte offset for EtherCAT registration (EsiIoConfigurator / ECDeviceModel). */
       unsigned int *ecDomainOffsetPtr() {
         return &mECDomainDataOffset;
       }

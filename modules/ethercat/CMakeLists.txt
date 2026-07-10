@@ -38,8 +38,11 @@ add_library(forte-ethercat
             device/ec_module.cpp
             device/model/ec_model.h
             device/model/ec_model.cpp
-            utils/EsiFileParser.h
-            utils/EsiFileParser.cpp
+            utils/esi_catalog.h
+            utils/esi_catalog.cpp
+            utils/esi_io_configurator.h
+            utils/esi_io_configurator.cpp
+            utils/esi_xml_utils.h
             types/ECBusAdapter.h
             types/ECBusAdapter.cpp
             types/ECDevice.h

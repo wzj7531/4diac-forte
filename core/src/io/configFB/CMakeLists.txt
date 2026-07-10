@@ -7,7 +7,7 @@
 #
 # Contributors: Johannes Messmer *   - initial API and implementation and/or
 # initial documentation
-#    Sichuan Qunyuan Technology Co., Ltd. - add io_slave_multi_handler
+#    Sichuan Qunyuan Technology Co., Ltd. - add createSlaveHandler() hook and generic FB constructor to io_slave_multi
 # *******************************************************************************/
 
 # ############################################################################
@@ -20,5 +20,4 @@ target_sources(forte-core PRIVATE
         io_configFB_controller.cpp
         io_master_multi.cpp
         io_slave_multi.cpp
-        io_slave_multi_handler.cpp
 )

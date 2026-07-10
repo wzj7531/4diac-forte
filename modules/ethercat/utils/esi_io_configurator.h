@@ -13,27 +13,26 @@
 
 #pragma once
 
-#include "../device/ec_device.h"
-#include "../device/ec_module.h"
-#include "forte/util/singlet.h"
+#include "esi_catalog.h"
 
-#include <map>
+#include <cstdint>
 #include <string>
 
-class TiXmlDocument;
 class TiXmlElement;
 
 namespace forte::eclipse4diac::io::ethercat {
 
+  class ECDeviceHandler;
+  class ECModuleHandler;
   class FORTE_ECDevice;
   class FORTE_ECModule;
 
-  class EsiFileParser {
-      DECLARE_SINGLETON(EsiFileParser)
-
+  class EsiIoConfigurator {
     public:
-      bool loadDevice(uint32_t paProductCode, std::string &paErrMsg);
-      bool loadModule(uint32_t paModuleIdent, std::string &paErrMsg);
+      explicit EsiIoConfigurator(EsiCatalog &paCatalog);
+
+      bool validateDevice(uint32_t paProductCode, std::string &paErrMsg);
+      bool validateModule(uint32_t paModuleIdent, std::string &paErrMsg);
 
       void initDeviceIOHandles(uint32_t paProductCode, ECDeviceHandler *paDeviceHandler, FORTE_ECDevice &paDevice);
       void initModuleIOHandles(uint32_t paModuleIdent,
@@ -48,47 +47,28 @@ namespace forte::eclipse4diac::io::ethercat {
                                 FORTE_ECModule &paDevice);
 
     private:
-      bool loadEsiFileByKey(uint32_t paKey, std::string &paErrMsg);
-      void init();
-
-      bool getDeviceFromDocByProductCode(TiXmlDocument *paDocument,
-                                         uint32_t paProductCode,
-                                         TiXmlElement *&paDeviceElement,
-                                         std::string &paErrMsg);
-      bool getModuleFromDocByIdentity(TiXmlDocument *paDocument,
-                                      uint32_t paModuleIdent,
-                                      TiXmlElement *&paModuleElement,
-                                      std::string &paErrMsg);
+      void getPdoSizeInfo(TiXmlElement *paElement,
+                          FORTE_ECDevice &paDevice,
+                          uint16_t &paRcvBufferSize,
+                          uint16_t &paSendBufferSize);
+      void getPdoSizeInfo(TiXmlElement *paElement,
+                          FORTE_ECModule &paDevice,
+                          uint16_t &paRcvBufferSize,
+                          uint16_t &paSendBufferSize);
 
       void parseDevicePdo(const std::string &paPdoType,
-                          TiXmlElement *paDeviceElement,
+                          TiXmlElement *paElement,
                           ECDeviceHandler *paDeviceHandler,
                           FORTE_ECDevice &paDevice,
                           bool paRemapOnly = false);
       void parseModulePdo(const std::string &paPdoType,
-                          TiXmlElement *paModuleElement,
+                          TiXmlElement *paElement,
                           ECDeviceHandler *paDeviceHandler,
                           ECModuleHandler *paModuleHandler,
                           FORTE_ECModule &paDevice,
                           bool paRemapOnly = false);
 
-      void getPdoSizeInfo(TiXmlElement *paElement,
-                          FORTE_ECDevice &paDevice,
-                          uint16_t &paRcvBufferSize,
-                          uint16_t &paSendBufferSize);
-
-      void getPdoSizeInfo(TiXmlElement *paElement,
-                          FORTE_ECModule &paDevice,
-                          uint16_t &paRcvBufferSize,
-                          uint16_t &paSendBufferSize);
-
-      static uint32_t parseEcNumber(const char *paText);
-
-      static std::map<uint32_t, std::string> scmEsiFilePathMap;
-      static std::map<std::string, TiXmlDocument *> scmEsiFileDocMap;
-      static std::map<uint32_t, TiXmlElement *> scmDeviceOrModuleMap;
-      static std::map<uint32_t, std::string> scmVendorMap;
+      EsiCatalog &mCatalog;
   };
 
 } // namespace forte::eclipse4diac::io::ethercat
-

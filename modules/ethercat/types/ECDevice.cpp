@@ -15,7 +15,7 @@
 
 #include "../handler/bus.h"
 #include "../device/ec_device.h"
-#include "../utils/EsiFileParser.h"
+#include "../utils/esi_io_configurator.h"
 #include "forte/util/string_utils.h"
 
 #include <string>
@@ -42,7 +42,7 @@ namespace forte::eclipse4diac::io::ethercat {
   FORTE_ECDevice::FORTE_ECDevice(const forte::StringId paInstanceNameId,
                                CFBContainer &paContainer,
                                ECBusDeviceHandler::DeviceType paDeviceType) :
-      CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>(paContainer,
+      CGenFunctionBlock<forte::io::IOConfigFBMultiSlave>(paContainer,
                                            paInstanceNameId,
                                            scmSlaveConfigurationIO,
                                            scmSlaveConfigurationIONum,
@@ -92,6 +92,14 @@ namespace forte::eclipse4diac::io::ethercat {
     }
   }
 
+  CIEC_ANY *FORTE_ECDevice::mappingDi(const TPortId paRelativeIndex) {
+    return getDI(static_cast<TPortId>(getGenDIOffset() + paRelativeIndex));
+  }
+
+  void FORTE_ECDevice::registerMappedHandle(forte::io::IODeviceController::HandleDescriptor &paDesc) {
+    initHandle(paDesc);
+  }
+
   CIEC_ANY *FORTE_ECDevice::getDI(const TPortId paIndex) {
     switch (paIndex) {
       case 0: return &var_QI;
@@ -120,7 +128,7 @@ namespace forte::eclipse4diac::io::ethercat {
     switch (paIndex) {
       case 0: return &conn_QI;
       case 1: return &conn_Config;
-      default: return CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>::getDIConUnchecked(paIndex);
+      default: return CGenFunctionBlock<forte::io::IOConfigFBMultiSlave>::getDIConUnchecked(paIndex);
     }
   }
 
@@ -216,7 +224,8 @@ namespace forte::eclipse4diac::io::ethercat {
   const char *FORTE_ECDevice::init() {
     const auto productCode = static_cast<TForteUInt32>(Config().ProductCode);
     std::string errMsg;
-    if (!EsiFileParser::getInstance().loadDevice(productCode, errMsg)) {
+    auto &bus = *static_cast<ECBusHandler *>(&getController());
+    if (!bus.esiConfigurator().validateDevice(productCode, errMsg)) {
       mLastError = errMsg;
       return mLastError.c_str();
     }
@@ -241,9 +250,9 @@ namespace forte::eclipse4diac::io::ethercat {
       return;
     }
     if (bus.isLoopPrepared()) {
-      EsiFileParser::getInstance().remapDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
+      bus.esiConfigurator().remapDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
     } else {
-      EsiFileParser::getInstance().initDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
+      bus.esiConfigurator().initDeviceIOHandles(static_cast<TForteUInt32>(Config().ProductCode), device, *this);
     }
   }
 

@@ -19,14 +19,14 @@
 #include "forte/adapter.h"
 #include "forte/datatypes/forte_bool.h"
 #include "forte/datatypes/forte_wstring.h"
-#include "forte/io/configFB/io_slave_multi_handler.h"
+#include "forte/io/configFB/io_slave_multi.h"
+#include "forte/io/device/io_controller.h"
 #include "forte/genfb.h"
 #include <string>
 
 namespace forte::eclipse4diac::io::ethercat {
-  class EsiFileParser;
 
-  class FORTE_ECDevice : public CGenFunctionBlock<forte::io::IOConfigHandlerFBMultiSlave>, public ECBusDeviceHandler::Delegate {
+  class FORTE_ECDevice : public CGenFunctionBlock<forte::io::IOConfigFBMultiSlave>, public ECBusDeviceHandler::Delegate {
       DECLARE_GENERIC_FIRMWARE_FB(FORTE_ECDevice)
 
     public:
@@ -49,6 +49,9 @@ namespace forte::eclipse4diac::io::ethercat {
       size_t numOutMappings() const {
         return mNumOutPdus;
       }
+
+      CIEC_ANY *mappingDi(TPortId paRelativeIndex);
+      void registerMappedHandle(forte::io::IODeviceController::HandleDescriptor &paDesc);
 
     protected:
       virtual bool createSlaveHandler() override;
@@ -111,9 +114,6 @@ namespace forte::eclipse4diac::io::ethercat {
       size_t mNumInPdus{};
       size_t mNumOutPdus{};
       std::string mLastError;
-
-    private:
-      friend class EsiFileParser;
   };
 
 } // namespace forte::eclipse4diac::io::ethercat
